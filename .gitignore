@@ -1,0 +1,10 @@
+.envrc
+
+# serverless local cache
+.serverless/
+
+# installed node modules
+node_modules/
+
+# compiled rust binary
+target/
