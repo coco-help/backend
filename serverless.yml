@@ -47,6 +47,7 @@ functions:
       - http:
           path: '/register'
           method: POST
+          cors: true
           request:
             schema:
               application/json: ${file(schema/create_user.json)}
@@ -57,6 +58,7 @@ functions:
       - http:
           path: '/helper/{phone}'
           method: GET
+          cors: true
           request:
             parameters:
               paths:
@@ -68,6 +70,7 @@ functions:
       - http:
           path: '/helper/{phone}'
           method: PUT
+          cors: true
           request:
             parameters:
               paths:
@@ -81,6 +84,7 @@ functions:
       - http:
           path: '/helper/{phone}'
           method: DELETE
+          cors: true
           request:
             parameters:
               paths:
@@ -92,6 +96,7 @@ functions:
       - http:
           path: '/phone'
           method: GET
+          cors: true
           request:
             parameters:
               querystrings:
