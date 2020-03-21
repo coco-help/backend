@@ -8,6 +8,9 @@ cache:
   - .cargo
   - target/
 
+before_script:
+  - pip install -r requirements.txt -t vendored/
+
 stages:
   - build
   - lint
@@ -34,18 +37,19 @@ test:python:
 
 
 deploy:serverless:
-  image: "node:latest"
   stage: deploy
   only:
-  - master
+    - master
   environment:
     name: production
     url: "https://7xbv26cd6k.execute-api.eu-central-1.amazonaws.com/production/"
   cache:
     paths:
-    - node_modules/
-    - .serverless/
+      - node_modules/
+      - .serverless/
   before_script:
-  - npm install
+    - pip install -r requirements.txt -t vendored/
+    - apt update && apt install npm
+    - npm install
   script:
-  - npx serverless deploy --stage production
+    - npx serverless deploy --stage production
