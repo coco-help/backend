@@ -9,7 +9,8 @@ cache:
   - target/
 
 before_script:
-  - pip install -r requirements.txt -t vendored/
+  - pip install poetry
+  - poetry install
 
 stages:
   - build
@@ -21,19 +22,15 @@ stages:
 lint:python:
   stage: lint
 
-  before_script:
-    - pip install flake8
   script:
-    - flake8 corona_connect.py
+    - poetry run task lint
 
 
 test:python:
   stage: test
 
-  before_script:
-    - pip install pytest
   script:
-    - pytest tests/
+    - poetry run task test
 
 
 deploy:serverless:
@@ -47,9 +44,7 @@ deploy:serverless:
     paths:
       - node_modules/
       - .serverless/
-  before_script:
-    - pip install -r requirements.txt -t vendored/
-    - apt update && apt install npm
-    - npm install
   script:
+    - apt update && apt install npm -y
+    - npm install
     - npx serverless deploy --stage production
