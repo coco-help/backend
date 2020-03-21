@@ -47,6 +47,8 @@ test:cargo:
 deploy:serverless:
   image: "node:latest"
   stage: deploy
+  services:
+  - docker:19.03.1-dind
   only:
   - master
   environment:
@@ -55,6 +57,5 @@ deploy:serverless:
   cache:
     paths:
     - node_modules/
-    
   script:
-  - serverless deploy --stage production
+  - ngx serverless deploy --stage production
