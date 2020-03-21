@@ -56,6 +56,10 @@ functions:
       - http:
           path: '/phone'
           method: GET
+          request:
+            parameters:
+              querystrings:
+                zip: true
 
 
 # you can add CloudFormation resource templates here
