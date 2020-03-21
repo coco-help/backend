@@ -1,6 +1,8 @@
 variables:
   CARGO_HOME: "$CI_PROJECT_DIR/.cargo"
 
+image: "rust:1.41.0"
+
 cache:
   paths:
   - .cargo
@@ -19,7 +21,7 @@ build:cargo:
 
   script:
   - rustc --version && cargo --version  # Print version info for debugging
-  - cargo build
+  - cargo build --all
 
   artifacts:
     paths:
@@ -58,6 +60,8 @@ deploy:serverless:
   cache:
     paths:
     - node_modules/
+    - target/
+    - .serverless/
   before_script:
   - apk add npm
   - npm install
