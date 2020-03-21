@@ -1,7 +1,7 @@
 variables:
   CARGO_HOME: "$CI_PROJECT_DIR/.cargo"
 
-image: "python:3.8"
+image: "python:3.7"
 
 cache:
   paths:
