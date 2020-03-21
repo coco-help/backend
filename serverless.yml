@@ -36,6 +36,11 @@ functions:
       - http:
           path: '/register'
           method: POST
+          request:
+            schema:
+              application/json: ${file(schema/create_user.json)}
+
+
   phone:
     handler: corona_connect.phone
     events:
