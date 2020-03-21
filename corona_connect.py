@@ -53,6 +53,31 @@ def register(event, context):
 
 
 @db_session
+def get_helper(event, context):
+    if event["pathParameters"] is None or "phone" not in event["pathParameters"]:
+        body = {"error": "'phone' path paramter is needed"}
+        return {"statusCode": 400, "body": json.dumps(body)}
+
+    requested_phone = event["pathParameters"]["phone"]
+    helper = Helper.get(phone=requested_phone)
+    if helper is None:
+        body = {"error": "No helper for this number"}
+        return {"statusCode": 404, "body": json.dumps(body)}
+    else:
+        return {"statusCode": 200, "body": json.dumps(helper.to_dict())}
+
+
+@db_session
+def update_helper(event, context):
+    pass
+
+
+@db_session
+def delete_helper(event, context):
+    pass
+
+
+@db_session
 def phone(event, context):
     if (
         event["queryStringParameters"] is None
@@ -62,7 +87,7 @@ def phone(event, context):
         return {"statusCode": 400, "body": json.dumps(body)}
     requester_lat, requester_lon, _ = lookup_zip(event["queryStringParameters"]["zip"])
 
-    best_helpers = select(h for h in Helper).order_by(
+    best_helpers = select(h for h in Helper if h.is_active).order_by(
         lambda h: (h.lon - requester_lon) ** 2 + (h.lat - requester_lat) ** 2
     )
     best_helpers = list(best_helpers)
