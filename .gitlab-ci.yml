@@ -29,8 +29,6 @@ lint:python:
 test:python:
   stage: test
 
-  before_script:
-    - pip install pytest
   script:
     - poetry run task test
 
