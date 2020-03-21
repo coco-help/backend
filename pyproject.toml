@@ -10,6 +10,7 @@ python = "^3.7"
 sentry_sdk = "^0.14.3"
 pony = "^0.7.13"
 requests = "^2.23.0"
+glom = "^19.10.0"
 
 [tool.poetry.dev-dependencies]
 taskipy = "^1.2.1"
