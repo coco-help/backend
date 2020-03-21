@@ -14,6 +14,7 @@ class Helper(db.Entity):
     lat = Required(float)
     zip_code = Required(str)
     location_name = Required(str)
+    is_active = Required(bool)
 
 
 db.bind(
