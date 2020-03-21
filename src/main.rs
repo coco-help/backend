@@ -13,7 +13,7 @@ fn handler(
     // `serde_json::Values` impl `IntoResponse` by default
     // creating an application/json response
     Ok(json!({
-        "message": "Go Serverless v1.0! Your function executed successfully!"
+        "message": "user created"
     }))
 }
 
@@ -25,7 +25,7 @@ mod tests {
     fn handler_handles() {
         let request = Request::default();
         let expected = json!({
-            "message": "Go Serverless v1.0! Your function executed successfully!"
+            "message": "user created"
         })
         .into_response();
         let response = handler(request, Context::default())
