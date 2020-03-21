@@ -1,4 +1,4 @@
-variables:
+0variables:
   CARGO_HOME: "$CI_PROJECT_DIR/.cargo"
 
 cache:
@@ -46,7 +46,7 @@ test:cargo:
 
 
 deploy:serverless:
-  image: "node:latest"
+  image: "docker:latest"
   stage: deploy
   services:
   - docker:19.03.1-dind
@@ -59,6 +59,7 @@ deploy:serverless:
     paths:
     - node_modules/
   before_script:
+  - apk add npm
   - npm install
   script:
   - npx serverless deploy --stage production
