@@ -23,6 +23,7 @@ test:cargo:
 
 deploy:serverless:
   image: "softinstigate/serverless:latest"
+  stage: deploy
   only:
   - master
   environment:
