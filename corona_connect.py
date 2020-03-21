@@ -74,6 +74,15 @@ def update_helper(event, context):
         return {"statusCode": 400, "body": json.dumps(body)}
 
     requested_phone = event["pathParameters"]["phone"]
+    helper_update = json.loads(event["body"])
+
+    helper = Helper.get(phone=requested_phone)
+    if helper is None:
+        body = {"error": "No helper for this number"}
+        return {"statusCode": 404, "body": json.dumps(body)}
+    else:
+        helper.set(**helper_update)
+        return {"statusCode": 200, "body": json.dumps(helper.to_dict())}
 
 
 @db_session

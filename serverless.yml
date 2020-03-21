@@ -70,6 +70,8 @@ functions:
             parameters:
               paths:
                 phone: true
+            schema:
+              application/json: ${file(schema/update_user.json)}
 
   delete_helper:
     handler: corona_connect.delete_helper
