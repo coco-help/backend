@@ -59,4 +59,4 @@ deploy:serverless:
     paths:
     - node_modules/
   script:
-  - ngx serverless deploy --stage production
+  - npx serverless deploy --stage production
