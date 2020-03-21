@@ -3,5 +3,7 @@
     "serverless": "^1.47.0"
   },
   "name": "coco-api",
-  "dependencies": {}
+  "dependencies": {
+    "serverless-python-requirements": "^5.1.0"
+  }
 }

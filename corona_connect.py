@@ -1,5 +1,8 @@
 import json
 
+from pony.orm import *
+
+from db import Helper
 
 def register(event, context):
     body = {
@@ -13,10 +16,11 @@ def register(event, context):
 
     return response
 
-
+@db_session
 def phone(event, context):
+    helper = Helper[1]
     return {
-        "phone": "+4917696585570",
-        "name": "Jonas",
-        "location": "Berlin Mitte"
+        "phone": helper.phone,
+        "name": helper.first_name + " " + helper.last_name,
+        "location": "Berlin Mitte",
     }
