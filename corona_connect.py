@@ -13,6 +13,7 @@ sentry_sdk.init(
 )
 
 
+@db_session
 def register(event, context):
     user = json.loads(event["body"])
 
@@ -20,7 +21,7 @@ def register(event, context):
 
     user = dict(**user, first_name=first_name, last_name=last_name)
 
-    user["zip_code"] = user.pop("zip")
+    user["zip_code"] = str(user.pop("zip"))
     zip_response = requests.get(
         f"https://public.opendatasoft.com/api/records/1.0/search/",
         params=dict(
@@ -29,11 +30,14 @@ def register(event, context):
     )
     zip_json = zip_response.json()
 
-    lat, lon = glom.glom(zip_json, ("records", 0, "fields", "geo_point_2d"))
-    location = glom.glom(zip_json, ("records", 0, "fields", "note"))
+    lat, lon = glom.glom(zip_json, ("records", [("fields", "geo_point_2d")]))[0]
+    location = glom.glom(zip_json, ("records", [("fields", "note")]))[0]
 
-    new_user = Helper(**user, lat=lat, lon=lon, location=location)
-    print("Created", new_user)
+    user.update(lat=lat, lon=lon, location_name=location)
+
+    print("Creating user with", user)
+    new_user = Helper(**user)
+    print("Created user", new_user)
 
     body = {
         "message": new_user.first_name,
@@ -50,7 +54,7 @@ def phone(event, context):
     body = {
         "phone": helper.phone,
         "name": f"{helper.first_name} {helper.last_name}",
-        "location": "Berlin Mitte",
+        "location": helper.location_name,
     }
 
     return {"statusCode": 200, "body": json.dumps(body)}
