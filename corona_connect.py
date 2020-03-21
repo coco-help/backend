@@ -13,17 +13,38 @@ sentry_sdk.init(
 )
 
 
-def lookup_zip(zip):
+def lookup_zip(zip_code):
     zip_response = requests.get(
         f"https://public.opendatasoft.com/api/records/1.0/search/",
-        params=dict(dataset="postleitzahlen-deutschland", facet="plz", q=zip,),
+        params=dict(dataset="postleitzahlen-deutschland", facet="plz", q=zip_code,),
     )
     zip_json = zip_response.json()
 
-    lat, lon = glom.glom(zip_json, ("records", [("fields", "geo_point_2d")]))[0]
-    location_name = glom.glom(zip_json, ("records", [("fields", "note")]))[0]
+    return glom.glom(
+        zip_json,
+        (
+            "records",
+            [
+                (
+                    "fields",
+                    {
+                        "lat": glom.T["geo_point_2d"][0],
+                        "lon": glom.T["geo_point_2d"][1],
+                        "location_name": "note",
+                    },
+                )
+            ],
+        ),
+    )[0]
 
-    return lat, lon, location_name
+
+def make_response(body, status_code=200, headers=None):
+    headers = headers or {}
+    return {
+        "statusCode": status_code,
+        "body": json.dumps(body),
+        "headers": {"Access-Control-Allow-Origin": "*", **headers},
+    }
 
 
 @db_session
@@ -35,21 +56,23 @@ def register(event, context):
     user = dict(**user, first_name=first_name, last_name=last_name)
 
     user["zip_code"] = str(user.pop("zip"))
-    lat, lon, location_name = lookup_zip(user["zip_code"])
 
-    user.update(lat=lat, lon=lon, location_name=location_name, is_active=True)
+    try:
+        user.update(lookup_zip(user["zip_code"]))
+    except glom.PathAccessError:
+        return make_response(
+            {"error": "invalid_zip_code", "value": user["zip_code"]}, status_code=400
+        )
 
     print("Creating user with", user)
-    new_user = Helper(**user)
+    new_user = Helper(**user, is_active=user.get("is_active", True))
     print("Created user", new_user)
 
     body = {
         "message": new_user.first_name,
     }
 
-    response = {"statusCode": 200, "body": json.dumps(body)}
-
-    return response
+    return make_response(body)
 
 
 def verify(event, context):
@@ -59,15 +82,13 @@ def verify(event, context):
         or "phone" not in event["queryStringParameters"]
     ):
         body = {"error": "'code' and 'phone' query paramters are needed."}
-        return {"statusCode": 400, "body": json.dumps(body)}
+        return make_response(body, status_code=400)
 
     body = {
         "message": event["queryStringParameters"]["phone"],
     }
 
-    response = {"statusCode": 200, "body": json.dumps(body)}
-
-    return response
+    return make_response(body)
 
 
 @db_session
@@ -127,8 +148,11 @@ def phone(event, context):
         or "zip" not in event["queryStringParameters"]
     ):
         body = {"error": "'zip' query paramter is needed"}
-        return {"statusCode": 400, "body": json.dumps(body)}
-    requester_lat, requester_lon, _ = lookup_zip(event["queryStringParameters"]["zip"])
+        return make_response(body, status_code=400)
+
+    zip_point = lookup_zip(event["queryStringParameters"]["zip"])
+    requester_lat = zip_point["lan"]
+    requester_lon = zip_point["lon"]
 
     helper = (
         select(h for h in Helper if h.is_active)
@@ -137,6 +161,7 @@ def phone(event, context):
     )
     if helper is None:
         body = {"error": "No helpers available"}
+        return make_response(body, status_code=500)
     else:
         body = {
             "phone": helper.phone,
@@ -144,4 +169,4 @@ def phone(event, context):
             "location": helper.location_name,
         }
 
-        return {"statusCode": 200, "body": json.dumps(body)}
+        return make_response(body)
