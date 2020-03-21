@@ -11,6 +11,8 @@ class Helper(db.Entity):
     email = Required(str)
     lon = Required(float)
     lat = Required(float)
+    zip_code = Required(str)
+    location_name = Required(str)
 
 db.bind(
     provider='postgres',
@@ -19,4 +21,4 @@ db.bind(
     password=environ['DB_PASSWORD'],
     database='postgres'
 )
-db.generate_mapping(create_tables=True)
+db.generate_mapping(create_tables=False)
