@@ -19,26 +19,6 @@ provider:
 #  stage: dev
   region: eu-central-1
 
-# you can add statements to the Lambda function's IAM Role here
-#  iamRoleStatements:
-#    - Effect: "Allow"
-#      Action:
-#        - "s3:ListBucket"
-#      Resource: { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "ServerlessDeploymentBucket" } ] ]  }
-#    - Effect: "Allow"
-#      Action:
-#        - "s3:PutObject"
-#      Resource:
-#        Fn::Join:
-#          - ""
-#          - - "arn:aws:s3:::"
-#            - "Ref" : "ServerlessDeploymentBucket"
-#            - "/*"
-
-# you can define service wide environment variables here
-#  environment:
-#    variable1: value1
-
 package:
   individually: true
 
@@ -49,10 +29,16 @@ functions:
     # handler value syntax is `{cargo-package-name}.{bin-name}`
     # or `{cargo-package-name}` for short when you are building a
     # default bin for a given package.
-    handler: corona-connect
+    handler: corona-connect.register
     events:
       - http:
-          path: '/'
+          path: '/register'
+          method: POST
+  phone:
+    handler: corona-connect.phone
+    events:
+      - http:
+          path: '/phone'
           method: GET
 
 #    The following are a few example events you can configure
@@ -91,8 +77,8 @@ functions:
 # you can add CloudFormation resource templates here
 #resources:
 #  Resources:
-#    NewResource:
-#      Type: AWS::S3::Bucket
+#     usersDatabase:
+#      Type: AWS::RDS::DBInstance
 #      Properties:
 #        BucketName: my-new-bucket
 #  Outputs:
