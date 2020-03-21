@@ -44,8 +44,7 @@ deploy:serverless:
     paths:
       - node_modules/
       - .serverless/
-  before_script:
+  script:
     - apt update && apt install npm -y
     - npm install
-  script:
     - npx serverless deploy --stage production
