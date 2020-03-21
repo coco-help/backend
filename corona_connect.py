@@ -37,7 +37,7 @@ def register(event, context):
     user["zip_code"] = str(user.pop("zip"))
     lat, lon, location_name = lookup_zip(user["zip_code"])
 
-    user.update(lat=lat, lon=lon, location_name=location_name)
+    user.update(lat=lat, lon=lon, location_name=location_name, is_active=True)
 
     print("Creating user with", user)
     new_user = Helper(**user)
@@ -53,6 +53,56 @@ def register(event, context):
 
 
 @db_session
+def get_helper(event, context):
+    if event["pathParameters"] is None or "phone" not in event["pathParameters"]:
+        body = {"error": "'phone' path paramter is needed"}
+        return {"statusCode": 400, "body": json.dumps(body)}
+
+    requested_phone = event["pathParameters"]["phone"]
+    helper = Helper.get(phone=requested_phone)
+    if helper is None:
+        body = {"error": "No helper for this number"}
+        return {"statusCode": 404, "body": json.dumps(body)}
+    else:
+        return {"statusCode": 200, "body": json.dumps(helper.to_dict())}
+
+
+@db_session
+def update_helper(event, context):
+    if event["pathParameters"] is None or "phone" not in event["pathParameters"]:
+        body = {"error": "'phone' path paramter is needed"}
+        return {"statusCode": 400, "body": json.dumps(body)}
+
+    requested_phone = event["pathParameters"]["phone"]
+    helper_update = json.loads(event["body"])
+
+    helper = Helper.get(phone=requested_phone)
+    if helper is None:
+        body = {"error": "No helper for this number"}
+        return {"statusCode": 404, "body": json.dumps(body)}
+    else:
+        helper.set(**helper_update)
+        return {"statusCode": 200, "body": json.dumps(helper.to_dict())}
+
+
+@db_session
+def delete_helper(event, context):
+    if event["pathParameters"] is None or "phone" not in event["pathParameters"]:
+        body = {"error": "'phone' path paramter is needed"}
+        return {"statusCode": 400, "body": json.dumps(body)}
+
+    requested_phone = event["pathParameters"]["phone"]
+    helper = Helper.get(phone=requested_phone)
+    if helper is None:
+        body = {"error": "No helper for this number"}
+        return {"statusCode": 404, "body": json.dumps(body)}
+    else:
+        helper.delete()
+        body = {"message": "deleted"}
+        return {"statusCode": 200, "body": json.dumps(body)}
+
+
+@db_session
 def phone(event, context):
     if (
         event["queryStringParameters"] is None
@@ -62,15 +112,18 @@ def phone(event, context):
         return {"statusCode": 400, "body": json.dumps(body)}
     requester_lat, requester_lon, _ = lookup_zip(event["queryStringParameters"]["zip"])
 
-    best_helpers = select(h for h in Helper).order_by(
-        lambda h: (h.lon - requester_lon) ** 2 + (h.lat - requester_lat) ** 2
+    helper = (
+        select(h for h in Helper if h.is_active)
+        .order_by(lambda h: (h.lon - requester_lon) ** 2 + (h.lat - requester_lat) ** 2)
+        .first()
     )
-    best_helpers = list(best_helpers)
-    helper = best_helpers[0]
-    body = {
-        "phone": helper.phone,
-        "name": f"{helper.first_name} {helper.last_name}",
-        "location": helper.location_name,
-    }
+    if helper is None:
+        body = {"error": "No helpers available"}
+    else:
+        body = {
+            "phone": helper.phone,
+            "name": f"{helper.first_name} {helper.last_name}",
+            "location": helper.location_name,
+        }
 
-    return {"statusCode": 200, "body": json.dumps(body)}
+        return {"statusCode": 200, "body": json.dumps(body)}

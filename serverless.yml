@@ -49,6 +49,40 @@ functions:
             schema:
               application/json: ${file(schema/create_user.json)}
 
+  get_helper:
+    handler: corona_connect.get_helper
+    events:
+      - http:
+          path: '/helper/{phone}'
+          method: GET
+          request:
+            parameters:
+              paths:
+                phone: true
+
+  update_helper:
+    handler: corona_connect.update_helper
+    events:
+      - http:
+          path: '/helper/{phone}'
+          method: PUT
+          request:
+            parameters:
+              paths:
+                phone: true
+            schema:
+              application/json: ${file(schema/update_user.json)}
+
+  delete_helper:
+    handler: corona_connect.delete_helper
+    events:
+      - http:
+          path: '/helper/{phone}'
+          method: DELETE
+          request:
+            parameters:
+              paths:
+                phone: true
 
   phone:
     handler: corona_connect.phone

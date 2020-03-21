@@ -1,12 +1,12 @@
 from os import environ
 
-from pony.orm import Database, Required
+from pony.orm import Database, PrimaryKey, Required
 
 db = Database()
 
 
 class Helper(db.Entity):
-    phone = Required(str)
+    phone = PrimaryKey(str)
     first_name = Required(str)
     last_name = Required(str)
     email = Required(str)
@@ -14,6 +14,7 @@ class Helper(db.Entity):
     lat = Required(float)
     zip_code = Required(str)
     location_name = Required(str)
+    is_active = Required(bool)
 
 
 db.bind(
