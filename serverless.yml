@@ -13,7 +13,7 @@
 service: coco-api
 provider:
   name: aws
-  runtime: rust
+  runtime: python3.7
   memorySize: 128
   region: eu-central-1
   environment:
@@ -23,22 +23,21 @@ provider:
         - ["postgres://${env:POSTGRES_MASTER_USER, 'postgres'}:${env:POSTGRES_MASTER_PASSWORD}@", Fn::GetAtt: ["usersDatabase", "Endpoint.Address"], "/postgres" ]
 
 package:
-  individually: true
+  exclude:
+    - .envrc
 
-plugins:
-  - serverless-rust
 functions:
   register:
     # handler value syntax is `{cargo-package-name}.{bin-name}`
     # or `{cargo-package-name}` for short when you are building a
     # default bin for a given package.
-    handler: corona-connect.register
+    handler: corona_connect.register
     events:
       - http:
           path: '/register'
           method: POST
   phone:
-    handler: corona-connect.phone
+    handler: corona_connect.phone
     events:
       - http:
           path: '/phone'

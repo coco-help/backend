@@ -1,7 +1,7 @@
 variables:
   CARGO_HOME: "$CI_PROJECT_DIR/.cargo"
 
-image: "rust:1.41.0"
+image: "python:3.8"
 
 cache:
   paths:
@@ -15,43 +15,27 @@ stages:
   - deploy
 
 
-build:cargo:
-  image: "rust:latest"
-  stage: build
-
-  script:
-  - rustc --version && cargo --version  # Print version info for debugging
-  - cargo build --all
-
-  artifacts:
-    paths:
-    - target/
-
-
-lint:cargo:
-  image: "rust:latest"
+lint:python:
   stage: lint
 
   before_script:
-  - rustup component add clippy
+    - pip install flake8
   script:
-  - cargo clippy
+    - flake8 corona_connect.py
 
 
-test:cargo:
-  image: "rust:latest"
+test:python:
   stage: test
-  
+
+  before_script:
+    - pip install pytest
   script:
-  - rustc --version && cargo --version  # Print version info for debugging
-  - cargo test --all --verbose
+    - pytest tests/
 
 
 deploy:serverless:
-  image: "docker:latest"
+  image: "node:latest"
   stage: deploy
-  services:
-  - docker:19.03.1-dind
   only:
   - master
   environment:
@@ -60,10 +44,8 @@ deploy:serverless:
   cache:
     paths:
     - node_modules/
-    - target/
     - .serverless/
   before_script:
-  - apk add npm
   - npm install
   script:
   - npx serverless deploy --stage production
