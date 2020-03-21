@@ -157,7 +157,7 @@ def phone(event, context):
         return make_response(
             {"error": "invalid_zip_code", "value": zip_code}, status_code=400
         )
-    requester_lat = zip_point["lan"]
+    requester_lat = zip_point["lat"]
     requester_lon = zip_point["lon"]
 
     helper = (
