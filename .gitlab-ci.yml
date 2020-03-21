@@ -6,19 +6,11 @@ cache:
   - .cargo
 
 stages:
-  - lint
   - build
+  - lint
   - test
   - deploy
 
-lint:cargo:
-  image: "rust:latest"
-  stage: lint
-  
-  before_script:
-  - rustup component add clippy
-  script:
-  - cargo clippy
 
 build:cargo:
   image: "rust:latest"
@@ -30,6 +22,17 @@ build:cargo:
   artifacts:
     paths:
     - target/
+
+
+lint:cargo:
+  image: "rust:latest"
+  stage: lint
+
+  before_script:
+  - rustup component add clippy
+  script:
+  - cargo clippy
+
 
 test:cargo:
   image: "rust:latest"
