@@ -18,9 +18,12 @@ flake8 = "^3.7.9"
 pre-commit = "^2.2.0"
 
 [tool.taskipy.tasks]
-test = "pytest"
+test = "pytest tests/"
 lint = "pre-commit run --all-files"
 setup = "pre-commit install"
+
+[tool.isort]
+known_first_party = ["db", "corona_connect"]
 
 [build-system]
 requires = ["poetry>=0.12"]

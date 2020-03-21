@@ -7,9 +7,10 @@ repos:
     -   id: trailing-whitespace
     -   id: check-yaml
 -   repo: https://github.com/timothycrosley/isort
-    rev: 4.3.21-2  # Use the revision sha / tag you want to point at
+    rev: 4.3.21
     hooks:
     -   id: isort
+        additional_dependencies: ["isort[pyproject]"]
 -   repo: https://github.com/ambv/black
     rev: stable
     hooks:
