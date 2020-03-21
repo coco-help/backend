@@ -11,6 +11,8 @@ class Helper(db.Entity):
     email = Required(str)
     lon = Required(float)
     lat = Required(float)
+    zip_code = Required(str)
+    location_name = Required(str)
 
 db.bind(
     provider='postgres',
