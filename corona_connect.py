@@ -150,7 +150,13 @@ def phone(event, context):
         body = {"error": "'zip' query paramter is needed"}
         return make_response(body, status_code=400)
 
-    zip_point = lookup_zip(event["queryStringParameters"]["zip"])
+    zip_code = event["queryStringParameters"]["zip"]
+    try:
+        zip_point = lookup_zip(zip_code)
+    except glom.PathAccessError:
+        return make_response(
+            {"error": "invalid_zip_code", "value": zip_code}, status_code=400
+        )
     requester_lat = zip_point["lan"]
     requester_lon = zip_point["lon"]
 
