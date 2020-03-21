@@ -17,7 +17,8 @@ build:cargo:
   stage: build
 
   script:
-  - cargo build --release
+  - rustc --version && cargo --version  # Print version info for debugging
+  - cargo build
 
   artifacts:
     paths:
