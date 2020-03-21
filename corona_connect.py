@@ -16,8 +16,6 @@ sentry_sdk.init(
 def register(event, context):
     user = json.loads(event["body"])
 
-    print(f"Created user {user} in Database")
-
     first_name, _, last_name = user.pop("name").partition(" ")
 
     user = dict(**user, first_name=first_name, last_name=last_name)
@@ -35,6 +33,7 @@ def register(event, context):
     location = glom.glom(zip_json, ("records", 0, "fields", "note"))
 
     new_user = Helper(**user, lat=lat, lon=lon, location=location)
+    print("Created", new_user)
 
     body = {
         "message": new_user.first_name,
