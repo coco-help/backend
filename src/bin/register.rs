@@ -22,7 +22,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn handler_handles() {
+    fn creation_works() {
         let request = Request::default();
         let expected = json!({
             "message": "user created"

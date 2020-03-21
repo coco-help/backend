@@ -18,10 +18,10 @@ mod tests {
     use super::*;
 
     #[test]
-    fn handler_handles() {
+    fn get_phone_number() {
         let request = Request::default();
         let expected = json!({
-            "message": "+4917696585570"
+            "phone_number": "+4917696585570"
         })
             .into_response();
         let response = handler(request, Context::default())
