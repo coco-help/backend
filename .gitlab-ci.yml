@@ -1,4 +1,4 @@
-0variables:
+variables:
   CARGO_HOME: "$CI_PROJECT_DIR/.cargo"
 
 cache:
