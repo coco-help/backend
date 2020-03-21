@@ -55,7 +55,7 @@ def register(event, context):
 @db_session
 def phone(event, context):
     if (
-        "queryStringParameters" not in event
+        event["queryStringParameters"] is None
         or "zip" not in event["queryStringParameters"]
     ):
         return {"statusCode": 400, "body": "'zip' query paramter is needed"}
