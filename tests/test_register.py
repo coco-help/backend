@@ -1,2 +1,5 @@
+import corona_connect
+
+
 def test_register():
-    pass
+    corona_connect.register

@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "corona_connect"
+version = "0.1.0"
+description = ""
+authors = ["Jonas Bulik <jonas@bulik.dev>"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.7"
+sentry_sdk = "^0.14.3"
+
+[tool.poetry.dev-dependencies]
+taskipy = "^1.2.1"
+pytest = "^5.4.1"
+flake8 = "^3.7.9"
+pre-commit = "^2.2.0"
+
+[tool.taskipy.tasks]
+test = "pytest"
+lint = "pre-commit run --all-files"
+setup = "pre-commit install"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"

@@ -9,6 +9,7 @@ node_modules/
 
 .python-version
 __pycache__
+*.egg-info/
 vendored/
 !vendored/psycopg2/
 venv/
