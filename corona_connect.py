@@ -52,6 +52,24 @@ def register(event, context):
     return response
 
 
+def verify(event, context):
+    if (
+        event["queryStringParameters"] is None
+        or "code" not in event["queryStringParameters"]
+        or "phone" not in event["queryStringParameters"]
+    ):
+        body = {"error": "'code' and 'phone' query paramters are needed."}
+        return {"statusCode": 400, "body": json.dumps(body)}
+
+    body = {
+        "message": event["queryStringParameters"]["phone"],
+    }
+
+    response = {"statusCode": 200, "body": json.dumps(body)}
+
+    return response
+
+
 @db_session
 def get_helper(event, context):
     if event["pathParameters"] is None or "phone" not in event["pathParameters"]:
