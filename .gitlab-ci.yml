@@ -1,0 +1,33 @@
+stages:
+  - lint
+  - test
+  - deploy
+
+lint:cargo:
+  image: "rust:latest"
+  stage: lint
+  
+  before_script:
+  - rustup component add clippy
+  script:
+  - cargo clippy
+
+test:cargo:
+  image: "rust:latest"
+  stage: test
+  
+  script:
+  - rustc --version && cargo --version  # Print version info for debugging
+  - cargo test --all --verbose
+
+
+deploy:serverless:
+  image: "softinstigate/serverless:latest"
+  only:
+  - master
+  environment:
+    name: production
+    url: "https://7xbv26cd6k.execute-api.eu-central-1.amazonaws.com/production/"
+    
+  script:
+  - npx serverless deploy  --stage production
