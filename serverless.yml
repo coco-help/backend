@@ -28,6 +28,9 @@ package:
   exclude:
     - .envrc
     - .gitlab-ci.yml
+    - .pytest_cache/**
+    - .pre-commit-config.yaml
+    - .idea/**
     - tests/**
     - schema/**
     - pyproject.toml
@@ -36,6 +39,9 @@ package:
     - package.json
     - package-lock.json
     - venv
+    - migrations/**
+    - __pycache__/**
+    - node_modules/**
 
 functions:
   register:
