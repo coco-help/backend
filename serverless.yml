@@ -98,6 +98,20 @@ functions:
                 zip: true
 
 
+  verify:
+    handler: corona_connect.verify
+    events:
+      - http:
+          path: '/verify'
+          method: GET
+          request:
+            parameters:
+              querystrings:
+                code: true
+                phone: true
+
+
+
 # you can add CloudFormation resource templates here
 resources:
   Resources:
