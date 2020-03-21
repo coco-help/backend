@@ -1,3 +1,10 @@
+variables:
+  CARGO_HOME: "$CI_PROJECT_DIR/.cargo"
+
+cache:
+  paths:
+  - .cargo
+
 stages:
   - lint
   - test
@@ -29,6 +36,9 @@ deploy:serverless:
   environment:
     name: production
     url: "https://7xbv26cd6k.execute-api.eu-central-1.amazonaws.com/production/"
+  cache:
+    paths:
+    - node_modules/
     
   script:
   - npx serverless deploy  --stage production
