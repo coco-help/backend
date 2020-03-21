@@ -58,7 +58,8 @@ def phone(event, context):
         event["queryStringParameters"] is None
         or "zip" not in event["queryStringParameters"]
     ):
-        return {"statusCode": 400, "body": "'zip' query paramter is needed"}
+        body = {"error": "'zip' query paramter is needed"}
+        return {"statusCode": 400, "body": json.dumps(body)}
     requester_lat, requester_lon, _ = lookup_zip(event["queryStringParameters"]["zip"])
 
     best_helpers = select(h for h in Helper).order_by(
