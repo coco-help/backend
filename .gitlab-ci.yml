@@ -7,6 +7,7 @@ cache:
 
 stages:
   - lint
+  - build
   - test
   - deploy
 
@@ -19,6 +20,17 @@ lint:cargo:
   script:
   - cargo clippy
 
+build:cargo:
+  image: "rust:latest"
+  stage: build
+
+  script:
+  - cargo build --release
+
+  artifacts:
+    paths:
+    - target/
+
 test:cargo:
   image: "rust:latest"
   stage: test
@@ -29,7 +41,7 @@ test:cargo:
 
 
 deploy:serverless:
-  image: "softinstigate/serverless:latest"
+  image: "node:latest"
   stage: deploy
   only:
   - master
@@ -41,4 +53,4 @@ deploy:serverless:
     - node_modules/
     
   script:
-  - npx serverless deploy  --stage production
+  - serverless deploy --stage production
