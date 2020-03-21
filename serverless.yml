@@ -17,14 +17,22 @@ provider:
   memorySize: 128
   region: eu-central-1
   environment:
+    DB_HOST: 
+      Fn::GetAtt: ["helperDatabase", "Endpoint.Address"]
+    DB_USER: ${env:POSTGRES_MASTER_USER, 'postgres'}
+    DB_PASSWORD: ${env:POSTGRES_MASTER_PASSWORD}
     DATABASE_URL:
       Fn::Join:
         - ""
-        - ["postgres://${env:POSTGRES_MASTER_USER, 'postgres'}:${env:POSTGRES_MASTER_PASSWORD}@", Fn::GetAtt: ["usersDatabase", "Endpoint.Address"], "/postgres" ]
+        - ["postgres://${env:POSTGRES_MASTER_USER, 'postgres'}:${env:POSTGRES_MASTER_PASSWORD}@", Fn::GetAtt: ["helperDatabase", "Endpoint.Address"], "/postgres" ]
 
+plugins:
+  - serverless-python-requirements
+      
 package:
   exclude:
     - .envrc
+    - venv
 
 functions:
   register:
@@ -52,7 +60,7 @@ functions:
 # you can add CloudFormation resource templates here
 resources:
   Resources:
-     usersDatabase:
+    helperDatabase:
       Type: AWS::RDS::DBInstance
       Properties:
         DBInstanceClass: db.t2.micro
