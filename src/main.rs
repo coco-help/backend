@@ -6,10 +6,10 @@ fn main() {
     lambda!(handler)
 }
 
-fn handler(
-    _: Request,
-    _: Context,
-) -> Result<impl IntoResponse, HandlerError> {
+fn handler(_request: Request, _ctx: Context) -> Result<impl IntoResponse, HandlerError> {
+    let _guard = sentry::init("https://c28a0bbf11d443f98ef6253bdc29bbe6@sentry.io/5169580");
+    sentry::integrations::panic::register_panic_handler();
+
     // `serde_json::Values` impl `IntoResponse` by default
     // creating an application/json response
     Ok(json!({
