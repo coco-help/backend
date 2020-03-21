@@ -37,7 +37,7 @@ def register(event, context):
     user["zip_code"] = str(user.pop("zip"))
     lat, lon, location_name = lookup_zip(user["zip_code"])
 
-    user.update(lat=lat, lon=lon, location_name=location_name)
+    user.update(lat=lat, lon=lon, location_name=location_name, is_active=True)
 
     print("Creating user with", user)
     new_user = Helper(**user)
@@ -69,12 +69,28 @@ def get_helper(event, context):
 
 @db_session
 def update_helper(event, context):
-    pass
+    if event["pathParameters"] is None or "phone" not in event["pathParameters"]:
+        body = {"error": "'phone' path paramter is needed"}
+        return {"statusCode": 400, "body": json.dumps(body)}
+
+    requested_phone = event["pathParameters"]["phone"]
 
 
 @db_session
 def delete_helper(event, context):
-    pass
+    if event["pathParameters"] is None or "phone" not in event["pathParameters"]:
+        body = {"error": "'phone' path paramter is needed"}
+        return {"statusCode": 400, "body": json.dumps(body)}
+
+    requested_phone = event["pathParameters"]["phone"]
+    helper = Helper.get(phone=requested_phone)
+    if helper is None:
+        body = {"error": "No helper for this number"}
+        return {"statusCode": 404, "body": json.dumps(body)}
+    else:
+        helper.delete()
+        body = {"message": "deleted"}
+        return {"statusCode": 200, "body": json.dumps(body)}
 
 
 @db_session
