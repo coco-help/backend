@@ -112,15 +112,18 @@ def phone(event, context):
         return {"statusCode": 400, "body": json.dumps(body)}
     requester_lat, requester_lon, _ = lookup_zip(event["queryStringParameters"]["zip"])
 
-    best_helpers = select(h for h in Helper if h.is_active).order_by(
-        lambda h: (h.lon - requester_lon) ** 2 + (h.lat - requester_lat) ** 2
+    helper = (
+        select(h for h in Helper if h.is_active)
+        .order_by(lambda h: (h.lon - requester_lon) ** 2 + (h.lat - requester_lat) ** 2)
+        .first()
     )
-    best_helpers = list(best_helpers)
-    helper = best_helpers[0]
-    body = {
-        "phone": helper.phone,
-        "name": f"{helper.first_name} {helper.last_name}",
-        "location": helper.location_name,
-    }
+    if helper is None:
+        body = {"error": "No helpers available"}
+    else:
+        body = {
+            "phone": helper.phone,
+            "name": f"{helper.first_name} {helper.last_name}",
+            "location": helper.location_name,
+        }
 
-    return {"statusCode": 200, "body": json.dumps(body)}
+        return {"statusCode": 200, "body": json.dumps(body)}
