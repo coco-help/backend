@@ -19,4 +19,4 @@ db.bind(
     password=environ['DB_PASSWORD'],
     database='postgres'
 )
-db.generate_mapping(create_tables=True)
+db.generate_mapping(create_tables=False)
