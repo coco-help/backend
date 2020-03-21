@@ -34,8 +34,9 @@ def lookup_zip(zip_code):
                     },
                 )
             ],
+            glom.T[0],
         ),
-    )[0]
+    )
 
 
 def make_response(body, status_code=200, headers=None):
