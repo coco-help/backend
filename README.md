@@ -25,3 +25,6 @@ poetry run task lint
 ```bash
 poetry run task test
 ```
+
+# migrating database
+look at the sql scripts in migrations/
