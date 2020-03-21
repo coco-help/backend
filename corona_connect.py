@@ -1,16 +1,14 @@
 import json
 
 import sentry_sdk
+from db import Helper
+from pony.orm import db_session
 from sentry_sdk.integrations.aws_lambda import AwsLambdaIntegration
 
 sentry_sdk.init(
     dsn="https://c3490788b0fd46d09992667d01bb0352@sentry.io/5169971",
-    integrations=[AwsLambdaIntegration()]
+    integrations=[AwsLambdaIntegration()],
 )
-
-from pony.orm import db_session
-
-from db import Helper
 
 
 def register(event, context):
@@ -36,7 +34,4 @@ def phone(event, context):
         "location": "Berlin Mitte",
     }
 
-    return {
-        "statusCode": 200,
-        "body": json.dumps(body)
-    }
+    return {"statusCode": 200, "body": json.dumps(body)}

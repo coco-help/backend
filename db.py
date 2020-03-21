@@ -1,8 +1,9 @@
 from os import environ
 
-from pony.orm import *
+from pony.orm import Database, Required
 
 db = Database()
+
 
 class Helper(db.Entity):
     phone = Required(str)
@@ -14,11 +15,12 @@ class Helper(db.Entity):
     zip_code = Required(str)
     location_name = Required(str)
 
+
 db.bind(
-    provider='postgres',
-    host=environ['DB_HOST'],
-    user=environ['DB_USER'],
-    password=environ['DB_PASSWORD'],
-    database='postgres'
+    provider="postgres",
+    host=environ["DB_HOST"],
+    user=environ["DB_USER"],
+    password=environ["DB_PASSWORD"],
+    database="postgres",
 )
 db.generate_mapping(create_tables=False)
