@@ -4,6 +4,7 @@ variables:
 cache:
   paths:
   - .cargo
+  - target/
 
 stages:
   - build
