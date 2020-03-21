@@ -26,5 +26,5 @@ def phone(event, context):
 
     return {
         "statusCode": 200,
-        "body": json.dumps(body}),
+        "body": json.dumps(body)
     }
