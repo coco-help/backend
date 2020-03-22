@@ -78,6 +78,13 @@ def normalize_phone(phone):
     return phonenumbers.format_number(phone_parsed, phonenumbers.PhoneNumberFormat.E164)
 
 
+def validate_phone(phone):
+    phone_parsed = phonenumbers.parse(phone, region="DE")
+    return phonenumbers.is_possible_number(
+        phone_parsed
+    ) and phonenumbers.is_valid_number(phone_parsed)
+
+
 @db_session
 def register(event, context):
     LOGGER.info("received", event)
@@ -94,13 +101,10 @@ def register(event, context):
     except phonenumbers.NumberParseException:
         body = {"error": "invalid_field", "field": "phone"}
         return make_response(body, 422)
-    if not (
-        phonenumbers.is_possible_number(user["phone"])
-        and phonenumbers.is_valid_number(user["phone"])
-    ):
-        return make_response(
-            {"error": "invalid_phone_number", "value": user["phone"]}, status_code=400
-        )
+
+    if not validate_phone(user["phone"]):
+        body = {"error": "invalid_phone_number", "value": user["phone"]}
+        return make_response(body, 400)
 
     user.setdefault("is_active", True)
     user.setdefault("last_called", datetime.datetime.utcnow())
