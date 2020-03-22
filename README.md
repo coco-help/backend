@@ -1,11 +1,11 @@
 # CoronaConnect backend
 The backend that powers CoCo's hotline and front-end. It is developed using the [serverless framework](https://serverless.com/) and
-is inteded to be deployed on AWS Lambda.
+is inteded to be deployed on [AWS Lambda](https://aws.amazon.com/lambda/?nc1=h_ls).
 
 # Endpoints
 
 ## POST /register
-Add a new helper to the database. After a successful request, the helper can be matched. 
+Add a new helper to the database. After a successful request, the helper can be matched.
 
 ### Example request
 `/register`
