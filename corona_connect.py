@@ -80,9 +80,13 @@ def normalize_phone(phone):
 
 def validate_phone(phone):
     phone_parsed = phonenumbers.parse(phone, region="DE")
-    return phonenumbers.is_possible_number(
-        phone_parsed
-    ) and phonenumbers.is_valid_number(phone_parsed)
+    if not (
+        phonenumbers.is_possible_number(phone_parsed)
+        and phonenumbers.is_valid_number(phone_parsed)
+    ):
+        raise phonenumbers.NumberParseException(
+            "NOT_A_NUMBER", "Invalid or impossible number"
+        )
 
 
 @db_session
@@ -98,13 +102,10 @@ def register(event, context):
 
     try:
         user["phone"] = normalize_phone(user["phone"])
+        validate_phone(user["phone"])
     except phonenumbers.NumberParseException:
         body = {"error": "invalid_field", "field": "phone"}
         return make_response(body, 422)
-
-    if not validate_phone(user["phone"]):
-        body = {"error": "invalid_phone_number", "value": user["phone"]}
-        return make_response(body, 400)
 
     user.setdefault("is_active", True)
     user.setdefault("last_called", datetime.datetime.utcnow())
