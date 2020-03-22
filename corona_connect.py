@@ -1,7 +1,7 @@
 import json
 import logging
 import os
-import uuid
+import random
 from urllib import parse
 
 import glom
@@ -86,17 +86,21 @@ def register(event, context):
         )
 
     LOGGER.info("Creating user with", user)
-    new_user = Helper(**user, verify_code=uuid.uuid4().hex)
+    one_time_pin = str(random.randint(0, 9999)).zfill(4)  # nosec
+    new_user = Helper(**user, verify_code=one_time_pin)
     LOGGER.info("Created user", new_user.to_dict())
 
     # this is really hacky & bad, but it works for now
     url = parse.urljoin(
         f'https://{event["headers"]["Host"]}',
-        f'{event["requestContext"]["path"]}/../verify',
+        f'{event["requestContext"]["path"]}/../verify/{new_user.phone}',
     )
     LOGGER.info(f"Send {url} to {new_user.phone}")
     twilio.messages.create(
-        body=f"Danke das du helfen möchtest. Bitte verifiziere dich indem du den folgenden Link öffnest:\n{url}?code={new_user.verify_code}",
+        body=f"Hallo {new_user.first_name}, "
+        f"Danke das du helfen möchtest.\n"
+        f"Dein Code ist {new_user.verify_code}\n"
+        f"Oder verifiziere dich indem du den folgenden Link öffnest:\n{url}?code={new_user.verify_code}",
         from_="+1 956 247 4513",
         to=new_user.phone,
     )
@@ -113,24 +117,40 @@ def register(event, context):
 def verify(event, context):
     if (
         event["queryStringParameters"] is None
+        or event["pathParameters"] is None
         or "code" not in event["queryStringParameters"]
+        or "phone" not in event["pathParameters"]
     ):
-        body = {"error": "'code' query paramters id needed."}
+        body = {"error": "'code' query parameter is needed."}
         return make_response(body, status_code=400)
 
+    phone_number = event["pathParameters"]["phone"]
     verify_code = event["queryStringParameters"]["code"]
 
-    helper = Helper.get(verify_code=verify_code)
-    if helper is None:
+    try:
+        helper = Helper[phone_number]
+    except KeyError:
         body = {"error": "invalid_verify_code"}
         return make_response(body, status_code=404)
+
+    if helper.verify_code != verify_code:
+        body = {"error": "invalid_verify_code"}
+        return make_response(body, status_code=404)
+
     helper.verified = True
     helper.verify_code = None
 
     body = {
-        "message": "User verified",
+        "message": "user_verified",
         "value": helper.phone,
     }
+
+    if "next" in event["queryStringParameters"]:
+        return make_response(
+            body,
+            status_code=301,
+            headers={"Location": event["queryStringParameters"]["next"]},
+        )
 
     return make_response(body)
 

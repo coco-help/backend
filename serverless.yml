@@ -115,13 +115,15 @@ functions:
     handler: corona_connect.verify
     events:
       - http:
-          path: '/verify'
+          path: '/verify/{phone}'
           method: GET
           request:
             parameters:
+              paths:
+                phone: true
               querystrings:
                 code: true
-                phone: true
+
 
 
 
