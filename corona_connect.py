@@ -12,7 +12,7 @@ import requests
 import sentry_sdk
 import yarl
 from db import Helper
-from pony.orm import db_session
+from pony.orm import ObjectNotFound, db_session
 from sentry_sdk.integrations.aws_lambda import AwsLambdaIntegration
 from twilio.rest import Client
 
@@ -27,6 +27,8 @@ sentry_sdk.init(
 
 FROM_PHONE_NUMBER = os.environ.get("TWILIO_FROM_PHONE_NUMBER", "+1 956 247 4513")
 JWT_SECRET = os.environ["JWT_SECRET"]
+JWT_ALGORITHM = os.environ.get("JWT_ALGORITHM", "HS256")
+
 USE_TWILIO = "TWILIO_ACCOUNT_SID" in os.environ and "TWILIO_AUTH_TOKEN" in os.environ
 if USE_TWILIO:
     twilio = Client(os.environ["TWILIO_ACCOUNT_SID"], os.environ["TWILIO_AUTH_TOKEN"])
@@ -79,6 +81,12 @@ def lookup_zip(zip_code):
 
 def make_response(body, status_code=200, *, headers=None):
     headers = headers or {}
+    sentry_sdk.add_breadcrumb(
+        category="response",
+        message=f"dumping {body} with headers: {headers}",
+        level="info",
+        type="http",
+    )
     return {
         "statusCode": status_code,
         "body": json.dumps(body),
@@ -106,18 +114,14 @@ def authorize(event, context):
     sentry_sdk.add_breadcrumb(event)
     try:
         token = event["authorizationToken"]
-        decoded_token = jwt.decode(token, key=JWT_SECRET)
+        decoded_token = jwt.decode(token, key=JWT_SECRET, algorithms=[JWT_ALGORITHM])
         sentry_sdk.add_breadcrumb(decoded_token)
         phone_number = decoded_token["phone"]
-        valid_until = datetime.datetime.fromtimestamp(decoded_token["exp"])
-    except (KeyError, jwt.DecodeError, glom.PathAccessError):
+    except (KeyError, jwt.PyJWTError, glom.PathAccessError):
         effect = "Deny"
     else:
         # only accessing ourselves is allowed
-        if (
-            yarl.URL(event["methodArn"]).parts[-1] == phone_number
-            and valid_until > datetime.datetime.now()
-        ):
+        if yarl.URL(event["methodArn"]).parts[-1] == phone_number:
             effect = "Allow"
         else:
             effect = "Deny"
@@ -201,7 +205,7 @@ def login(event, context):
     user_phone = event["pathParameters"]["phone"]
     try:
         user = Helper[user_phone]
-    except KeyError:
+    except ObjectNotFound:
         body = {"error": "helper_not_found", "value": user_phone}
         return make_response(body, 404)
 
@@ -231,7 +235,7 @@ def verify(event, context):
 
     try:
         helper = Helper[phone_number]
-    except KeyError:
+    except ObjectNotFound:
         body = {"error": "verification_failed"}
         return make_response(body, status_code=404)
 
@@ -250,6 +254,7 @@ def verify(event, context):
             "phone": helper.phone,
         },
         key=JWT_SECRET,
+        algorithm=JWT_ALGORITHM,
     ).decode("utf8")
 
     body = {
@@ -282,9 +287,9 @@ def get_helper(event, context):
     helper = Helper.get(phone=normalize_phone(requested_phone))
     if helper is None:
         body = {"error": "No helper for this number"}
-        return {"statusCode": 404, "body": json.dumps(body)}
+        return make_response(body, 404)
     else:
-        return {"statusCode": 200, "body": json.dumps(helper.to_dict())}
+        return make_response(helper.to_dict(), 200)
 
 
 @db_session
