@@ -13,7 +13,7 @@ import requests
 import sentry_sdk
 import yarl
 from db import Helper
-from pony.orm import db_session
+from pony.orm import ObjectNotFound, db_session
 from sentry_sdk.integrations.aws_lambda import AwsLambdaIntegration
 from twilio.rest import Client
 
@@ -206,7 +206,7 @@ def login(event, context):
     user_phone = event["pathParameters"]["phone"]
     try:
         user = Helper[user_phone]
-    except KeyError:
+    except ObjectNotFound:
         body = {"error": "helper_not_found", "value": user_phone}
         return make_response(body, 404)
 
@@ -231,7 +231,7 @@ def verify(event, context):
 
     try:
         helper = Helper[phone_number]
-    except KeyError:
+    except ObjectNotFound:
         body = {"error": "verification_failed"}
         return make_response(body, status_code=404)
 
