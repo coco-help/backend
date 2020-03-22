@@ -5,6 +5,7 @@ import os
 import random
 from urllib import parse
 
+import db
 import glom
 import requests
 import sentry_sdk
@@ -32,6 +33,8 @@ else:
     from unittest.mock import Mock
 
     twilio = Mock(spec=Client)
+
+db.setup()
 
 
 def lookup_zip(zip_code):

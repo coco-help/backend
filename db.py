@@ -21,11 +21,12 @@ class Helper(db.Entity):
     last_called = Required(datetime.datetime)
 
 
-db.bind(
-    provider="postgres",
-    host=environ["DB_HOST"],
-    user=environ["DB_USER"],
-    password=environ["DB_PASSWORD"],
-    database="postgres",
-)
-db.generate_mapping(create_tables=False)
+def setup():
+    db.bind(
+        provider="postgres",
+        host=environ["DB_HOST"],
+        user=environ["DB_USER"],
+        password=environ["DB_PASSWORD"],
+        database="postgres",
+    )
+    db.generate_mapping(create_tables=False)
