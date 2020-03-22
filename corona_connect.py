@@ -179,7 +179,7 @@ def register(event, context):
     new_user = Helper(**user, verify_code=one_time_pin())
     LOGGER.info("Created user", new_user.to_dict())
 
-    url = f"https://coco-frontend.now.sh/auth/{new_user.phone}?code={new_user.verify_code}"
+    url = yarl.URL.build(scheme="https", host="coco-frontend.now.sh", path=f"/auth/{new_user.phone}", query={"code": new_user.verify_code}) 
     LOGGER.info(f"Send {url} to {new_user.phone}")
     message = (
         f"Hallo {new_user.first_name}, "
