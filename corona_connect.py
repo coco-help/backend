@@ -167,6 +167,11 @@ def register(event, context):
             {"error": "invalid_zip_code", "value": user["zip_code"]}, status_code=400
         )
 
+    phone_number = normalize_phone(user["phone"])
+    if Helper.get(phone=phone_number) is not None:
+        body = {"error": "Phone number already registered"}
+        return make_response(body, status_code=409)
+
     LOGGER.info("Creating user with", user)
     new_user = Helper(**user, verify_code=one_time_pin())
     LOGGER.info("Created user", new_user.to_dict())
