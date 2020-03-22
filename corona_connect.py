@@ -3,7 +3,6 @@ import json
 import logging
 import os
 import random
-from urllib import parse
 
 import db
 import glom
@@ -180,17 +179,18 @@ def register(event, context):
     new_user = Helper(**user, verify_code=one_time_pin())
     LOGGER.info("Created user", new_user.to_dict())
 
-    # this is really hacky & bad, but it works for now
-    url = parse.urljoin(
-        f'https://{event["headers"]["Host"]}',
-        f'{event["requestContext"]["path"]}/../verify/{new_user.phone}',
+    url = yarl.URL.build(
+        scheme="https",
+        host="coco-frontend.now.sh",
+        path=f"/auth/{new_user.phone}",
+        query={"code": new_user.verify_code},
     )
     LOGGER.info(f"Send {url} to {new_user.phone}")
     message = (
         f"Hallo {new_user.first_name}, "
         f"Danke das du helfen möchtest.\n"
         f"Dein Code ist {new_user.verify_code}\n"
-        f"Oder verifiziere dich indem du den folgenden Link öffnest:\n{url}?code={new_user.verify_code}",
+        f"Oder verifiziere dich indem du den folgenden Link öffnest:\n{url}",
     )
     send_sms(new_user.phone, message)
 
@@ -215,7 +215,17 @@ def login(event, context):
         return make_response(body, 404)
 
     user.verify_code = one_time_pin()
-    send_sms(user.phone, f"Hier dein Code zum einloggen: {user.verify_code}")
+    url = yarl.URL.build(
+        scheme="https",
+        host="coco-frontend.now.sh",
+        path=f"/auth/{user.phone}",
+        query={"code": user.verify_code},
+    )
+    message = (
+        f"Hier dein Code zum einloggen: {user.verify_code}\n"
+        f"Oder verifiziere dich indem du den folgenden Link öffnest:\n{url}"
+    )
+    send_sms(user.phone, message)
     return make_response({"message": "user_message_sent"})
 
 
