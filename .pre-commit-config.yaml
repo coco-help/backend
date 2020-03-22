@@ -4,8 +4,15 @@ repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v2.5.0  # Use the ref you want to point at
     hooks:
+    -   id: no-commit-to-branch
     -   id: trailing-whitespace
+    -   id: end-of-file-fixer
     -   id: check-yaml
+    -   id: check-merge-conflict
+    -   id: detect-private-key
+    -   id: mixed-line-ending
+    -   id: pretty-format-json
+        args: [--autofix]
 -   repo: https://github.com/timothycrosley/isort
     rev: 4.3.21
     hooks:
@@ -21,3 +28,12 @@ repos:
     hooks:
     -   id: flake8
         args: ["--ignore=E501,W503"]
+-   repo: https://gitlab.com/MrGreenTea/add-gitlab-issue-to-commit-message
+    rev: 0.1.2
+    hooks:
+    -   id: add-issue
+-   repo: https://github.com/PyCQA/bandit
+    rev: 1.6.2
+    hooks:
+    -   id: bandit
+        exclude: tests/

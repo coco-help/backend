@@ -22,7 +22,7 @@ pre-commit = "^2.2.0"
 [tool.taskipy.tasks]
 test = "pytest tests/"
 lint = "pre-commit run --all-files"
-setup = "pre-commit install"
+setup = "poetry install && pre-commit install -t pre-commit -t prepare-commit-msg"
 
 [tool.isort]
 known_first_party = ["db", "corona_connect"]
