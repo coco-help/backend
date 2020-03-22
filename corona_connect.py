@@ -8,11 +8,13 @@ import glom
 import requests
 import sentry_sdk
 from db import Helper
-from pony.orm import db_session, select
+from pony.orm import db_session
 from sentry_sdk.integrations.aws_lambda import AwsLambdaIntegration
 from twilio.rest import Client
 
 LOGGER = logging.getLogger(__name__)
+
+EARTH_RADIUS_METERS = 6_371_000
 
 sentry_sdk.init(
     dsn="https://c3490788b0fd46d09992667d01bb0352@sentry.io/5169971",
@@ -221,14 +223,32 @@ def phone(event, context):
         return make_response(
             {"error": "invalid_zip_code", "value": zip_code}, status_code=400
         )
-    requester_lat = zip_point["lat"]
-    requester_lon = zip_point["lon"]
 
-    helper = (
-        select(h for h in Helper if h.is_active)
-        .order_by(lambda h: (h.lon - requester_lon) ** 2 + (h.lat - requester_lat) ** 2)
-        .first()
+    requester_lat = zip_point["lat"]  # noqa: F841
+    requester_lon = zip_point["lon"]  # noqa: F841
+    distance_weight = (  # noqa: F841
+        event["queryStringParameters"].get("distance_weight") or 1.0
     )
+    time_weight = (  # noqa: F841
+        event["queryStringParameters"].get("time_weight") or 40_000.0
+    )
+
+    helper = Helper.get_by_sql(
+        """
+        SELECT * FROM helper
+        ORDER BY
+            $distance_weight * $EARTH_RADIUS_METERS * 2 * asin(
+                sqrt(
+                    sin(radians($requester_lat - lat)/2)^2
+                    + sin(radians($requester_lon - lon)/2)^2
+                    * cos(radians($requester_lat))
+                    * cos(radians(lat))
+                )
+            )
+        LIMIT 1
+        """
+    )
+
     if helper is None:
         body = {"error": "no_helpers_available"}
         return make_response(body, status_code=404)
