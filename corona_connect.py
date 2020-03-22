@@ -3,7 +3,6 @@ import logging
 import os
 import random
 from urllib import parse
-import re
 
 import glom
 import phonenumbers
