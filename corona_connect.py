@@ -3,6 +3,7 @@ import json
 import logging
 import os
 import random
+from datetime import datetime, timedelta
 from urllib import parse
 
 import db
@@ -109,12 +110,16 @@ def authorize(event, context):
         token = event["authorizationToken"]
         decoded_token = jwt.decode(token, key=JWT_SECRET)
         sentry_sdk.add_breadcrumb(decoded_token)
-        phone_number = glom.glom(decoded_token, "user.phone")
+        phone_number = decoded_token["phone"]
+        valid_until = datetime.fromtimestamp(decoded_token["exp"])
     except (KeyError, jwt.DecodeError, glom.PathAccessError):
         effect = "Deny"
     else:
         # only accessing ourselves is allowed
-        if yarl.URL(event["methodArn"]).parts[-1] == phone_number:
+        if (
+            yarl.URL(event["methodArn"]).parts[-1] == phone_number
+            and valid_until > datetime.now()
+        ):
             effect = "Allow"
         else:
             effect = "Deny"
@@ -235,11 +240,9 @@ def verify(event, context):
 
     token = jwt.encode(
         {
-            "user": {
-                "phone": helper.phone,
-                "first_name": helper.first_name,
-                "last_name": helper.last_name,
-            }
+            "iat": datetime.now(),
+            "exp": datetime.now() + timedelta(minutes=15),
+            "phone": helper.phone,
         },
         key=JWT_SECRET,
     ).decode("utf8")
