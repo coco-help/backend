@@ -130,11 +130,11 @@ def verify(event, context):
     try:
         helper = Helper[phone_number]
     except KeyError:
-        body = {"error": "invalid_verify_code"}
+        body = {"error": "verification_failed"}
         return make_response(body, status_code=404)
 
     if helper.verify_code != verify_code:
-        body = {"error": "invalid_verify_code"}
+        body = {"error": "verification_failed"}
         return make_response(body, status_code=404)
 
     helper.verified = True
@@ -230,8 +230,8 @@ def phone(event, context):
         .first()
     )
     if helper is None:
-        body = {"error": "No helpers available"}
-        return make_response(body, status_code=500)
+        body = {"error": "no_helpers_available"}
+        return make_response(body, status_code=404)
     else:
         body = {
             "phone": helper.phone,
