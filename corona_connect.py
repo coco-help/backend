@@ -167,7 +167,8 @@ def register(event, context):
             {"error": "invalid_zip_code", "value": user["zip_code"]}, status_code=400
         )
 
-    if Helper.get(phone=user["phone"]) is not None:
+    phone_number = normalize_phone(user["phone"])
+    if Helper.get(phone=phone_number) is not None:
         body = {"error": "Phone number already registered"}
         return make_response(body, status_code=409)
 
