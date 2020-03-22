@@ -25,6 +25,9 @@ class Helper(db.Entity):
     last_called = Required(datetime.datetime, hidden=True)
     verify_code = Optional(str, nullable=True, hidden=True)
 
+    def to_dict(self):
+        return super(Helper, self).to_dict(exclude=["last_called", "verify_code"])
+
 
 def ensure_migration_version_table(conn):
     with conn.cursor() as cur:
