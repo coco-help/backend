@@ -1,6 +1,6 @@
 from os import environ
 
-from pony.orm import Database, PrimaryKey, Required
+from pony.orm import Database, Optional, PrimaryKey, Required
 
 db = Database()
 
@@ -16,6 +16,7 @@ class Helper(db.Entity):
     location_name = Required(str)
     is_active = Required(bool)
     verified = Required(bool, default=False)
+    verify_code = Optional(str, unique=True, nullable=True)
 
 
 db.bind(

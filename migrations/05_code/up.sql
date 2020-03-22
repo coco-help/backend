@@ -1,0 +1,2 @@
+ALTER TABLE helper
+ADD COLUMN verify_code UUID UNIQUE;

@@ -1,4 +1,5 @@
 import json
+import uuid
 
 import glom
 import requests
@@ -57,6 +58,7 @@ def register(event, context):
     user = dict(**user, first_name=first_name, last_name=last_name)
 
     user["zip_code"] = str(user.pop("zip"))
+    user.setdefault("is_active", True)
 
     try:
         user.update(lookup_zip(user["zip_code"]))
@@ -66,27 +68,35 @@ def register(event, context):
         )
 
     print("Creating user with", user)
-    new_user = Helper(**user, is_active=user.get("is_active", True))
-    print("Created user", new_user)
+    new_user = Helper(**user, verify_code=uuid.uuid4().hex)
+    print("Created user", new_user.to_dict())
 
     body = {
-        "message": new_user.first_name,
+        "message": "User created",
+        "code": new_user.verify_code,
     }
 
     return make_response(body)
 
 
+@db_session
 def verify(event, context):
     if (
         event["queryStringParameters"] is None
         or "code" not in event["queryStringParameters"]
-        or "phone" not in event["queryStringParameters"]
     ):
-        body = {"error": "'code' and 'phone' query paramters are needed."}
+        body = {"error": "'code' query paramters id needed."}
         return make_response(body, status_code=400)
 
+    verify_code = event["queryStringParameters"]["code"]
+
+    helper = Helper.get(verify_code=verify_code)
+    helper.verified = True
+    helper.verify_code = None
+
     body = {
-        "message": event["queryStringParameters"]["phone"],
+        "message": "User verified",
+        "value": helper.phone,
     }
 
     return make_response(body)
