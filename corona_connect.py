@@ -258,7 +258,7 @@ def phone(event, context):
                     * cos(radians($requester_lat))
                     * cos(radians(lat))
                 )
-            )
+            ) + $time_weight / (EXTRACT(epoch FROM (current_timestamp - last_called)) / 60)
         LIMIT 1
         """
     )
