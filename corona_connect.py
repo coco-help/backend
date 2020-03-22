@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import uuid
 from urllib import parse
@@ -11,12 +12,23 @@ from pony.orm import db_session, select
 from sentry_sdk.integrations.aws_lambda import AwsLambdaIntegration
 from twilio.rest import Client
 
+LOGGER = logging.getLogger(__name__)
+
 sentry_sdk.init(
     dsn="https://c3490788b0fd46d09992667d01bb0352@sentry.io/5169971",
     integrations=[AwsLambdaIntegration()],
 )
 
-twilio = Client(os.environ["TWILIO_ACCOUNT_SID"], os.environ["TWILIO_AUTH_TOKEN"])
+USE_TWILIO = "TWILIO_ACCOUNT_SID" in os.environ and "TWILIO_AUTH_TOKEN" in os.environ
+if USE_TWILIO:
+    twilio = Client(os.environ["TWILIO_ACCOUNT_SID"], os.environ["TWILIO_AUTH_TOKEN"])
+else:
+    LOGGER.warning(
+        "Not using TWILIO because $TWILIO_ACCOUNT_SID or $TWILIO_AUTH_TOKEN not set."
+    )
+    from unittest.mock import Mock
+
+    twilio = Mock(spec=Client)
 
 
 def lookup_zip(zip_code):
@@ -56,7 +68,7 @@ def make_response(body, status_code=200, headers=None):
 
 @db_session
 def register(event, context):
-    print("received", event)
+    LOGGER.info("received", event)
     user = json.loads(event["body"])
 
     first_name, _, last_name = user.pop("name").partition(" ")
@@ -73,16 +85,16 @@ def register(event, context):
             {"error": "invalid_zip_code", "value": user["zip_code"]}, status_code=400
         )
 
-    print("Creating user with", user)
+    LOGGER.info("Creating user with", user)
     new_user = Helper(**user, verify_code=uuid.uuid4().hex)
-    print("Created user", new_user.to_dict())
+    LOGGER.info("Created user", new_user.to_dict())
 
     # this is really hacky & bad, but it works for now
     url = parse.urljoin(
         f'https://{event["headers"]["Host"]}',
         f'{event["requestContext"]["path"]}/../verify',
     )
-    print(f"Send {url} to {new_user.phone}")
+    LOGGER.info(f"Send {url} to {new_user.phone}")
     twilio.messages.create(
         body=f"Danke das du helfen möchtest. Bitte verifiziere dich indem du den folgenden Link öffnest:\n{url}?code={new_user.verify_code}",
         from_="+1 956 247 4513",
