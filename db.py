@@ -1,5 +1,4 @@
 import datetime
-from os import environ
 
 from pony.orm import Database, Optional, PrimaryKey, Required
 
@@ -19,13 +18,3 @@ class Helper(db.Entity):
     verified = Required(bool, default=False)
     verify_code = Optional(str, nullable=True)
     last_called = Required(datetime.datetime)
-
-
-db.bind(
-    provider="postgres",
-    host=environ["DB_HOST"],
-    user=environ["DB_USER"],
-    password=environ["DB_PASSWORD"],
-    database="postgres",
-)
-db.generate_mapping(create_tables=False)

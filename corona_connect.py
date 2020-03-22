@@ -9,6 +9,7 @@ import glom
 import requests
 import sentry_sdk
 from db import Helper
+from db import db as db_instance
 from pony.orm import db_session
 from sentry_sdk.integrations.aws_lambda import AwsLambdaIntegration
 from twilio.rest import Client
@@ -32,6 +33,16 @@ else:
     from unittest.mock import Mock
 
     twilio = Mock(spec=Client)
+
+
+db_instance.bind(
+    provider="postgres",
+    host=os.environ["DB_HOST"],
+    user=os.environ["DB_USER"],
+    password=os.environ["DB_PASSWORD"],
+    database="postgres",
+)
+db_instance.generate_mapping(create_tables=False)
 
 
 def lookup_zip(zip_code):
