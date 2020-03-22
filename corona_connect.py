@@ -4,7 +4,6 @@ import logging
 import os
 import random
 from urllib import parse
-import re
 
 import db
 import glom
@@ -92,7 +91,16 @@ def register(event, context):
     user = dict(**user, first_name=first_name, last_name=last_name)
 
     user["zip_code"] = str(user.pop("zip"))
+
     user["phone"] = normalize_phone(user["phone"])
+    if not (
+        phonenumbers.is_possible_number(user["phone"])
+        and phonenumbers.is_valid_number(user["phone"])
+    ):
+        return make_response(
+            {"error": "invalid_phone_number", "value": user["phone"]}, status_code=400
+        )
+
     user.setdefault("is_active", True)
     user.setdefault("last_called", datetime.datetime.utcnow())
 
