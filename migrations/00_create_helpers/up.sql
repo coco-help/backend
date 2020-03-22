@@ -5,5 +5,5 @@ CREATE TABLE helper(
     last_name TEXT NOT NULL,
     email TEXT NOT NULL,
     lon REAL NOT NULL,
-    lat REAL NOT NULL,
+    lat REAL NOT NULL
 );
