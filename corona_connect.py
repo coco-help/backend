@@ -7,6 +7,7 @@ from urllib import parse
 
 import db
 import glom
+import phonenumbers
 import requests
 import sentry_sdk
 from db import Helper
@@ -72,6 +73,22 @@ def make_response(body, status_code=200, headers=None):
     }
 
 
+def normalize_phone(phone):
+    phone_parsed = phonenumbers.parse(phone, region="DE")
+    return phonenumbers.format_number(phone_parsed, phonenumbers.PhoneNumberFormat.E164)
+
+
+def validate_phone(phone):
+    phone_parsed = phonenumbers.parse(phone, region="DE")
+    if not (
+        phonenumbers.is_possible_number(phone_parsed)
+        and phonenumbers.is_valid_number(phone_parsed)
+    ):
+        raise phonenumbers.NumberParseException(
+            "NOT_A_NUMBER", "Invalid or impossible number"
+        )
+
+
 @db_session
 def register(event, context):
     LOGGER.info("received", event)
@@ -82,6 +99,14 @@ def register(event, context):
     user = dict(**user, first_name=first_name, last_name=last_name)
 
     user["zip_code"] = str(user.pop("zip"))
+
+    try:
+        user["phone"] = normalize_phone(user["phone"])
+        validate_phone(user["phone"])
+    except phonenumbers.NumberParseException:
+        body = {"error": "invalid_field", "field": "phone"}
+        return make_response(body, 422)
+
     user.setdefault("is_active", True)
     user.setdefault("last_called", datetime.datetime.utcnow())
 
@@ -169,7 +194,7 @@ def get_helper(event, context):
         return {"statusCode": 400, "body": json.dumps(body)}
 
     requested_phone = event["pathParameters"]["phone"]
-    helper = Helper.get(phone=requested_phone)
+    helper = Helper.get(phone=normalize_phone(requested_phone))
     if helper is None:
         body = {"error": "No helper for this number"}
         return {"statusCode": 404, "body": json.dumps(body)}
@@ -186,7 +211,7 @@ def update_helper(event, context):
     requested_phone = event["pathParameters"]["phone"]
     helper_update = json.loads(event["body"])
 
-    helper = Helper.get(phone=requested_phone)
+    helper = Helper.get(phone=normalize_phone(requested_phone))
     if helper is None:
         body = {"error": "No helper for this number"}
         return {"statusCode": 404, "body": json.dumps(body)}
@@ -202,7 +227,7 @@ def delete_helper(event, context):
         return {"statusCode": 400, "body": json.dumps(body)}
 
     requested_phone = event["pathParameters"]["phone"]
-    helper = Helper.get(phone=requested_phone)
+    helper = Helper.get(phone=normalize_phone(requested_phone))
     if helper is None:
         body = {"error": "No helper for this number"}
         return {"statusCode": 404, "body": json.dumps(body)}
