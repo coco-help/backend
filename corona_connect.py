@@ -1,3 +1,4 @@
+import datetime
 import json
 import logging
 import os
@@ -79,6 +80,7 @@ def register(event, context):
 
     user["zip_code"] = str(user.pop("zip"))
     user.setdefault("is_active", True)
+    user.setdefault("last_called", datetime.datetime.utcnow())
 
     try:
         user.update(lookup_zip(user["zip_code"]))
@@ -236,6 +238,7 @@ def phone(event, context):
     helper = Helper.get_by_sql(
         """
         SELECT * FROM helper
+        WHERE is_active AND verified
         ORDER BY
             $distance_weight * $EARTH_RADIUS_METERS * 2 * asin(
                 sqrt(
@@ -253,6 +256,7 @@ def phone(event, context):
         body = {"error": "no_helpers_available"}
         return make_response(body, status_code=404)
     else:
+        helper.last_called = datetime.datetime.utcnow()
         body = {
             "phone": helper.phone,
             "name": f"{helper.first_name} {helper.last_name}",
