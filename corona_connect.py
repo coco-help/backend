@@ -207,7 +207,7 @@ def login(event, context):
     if event["pathParameters"] is None or "phone" not in event["pathParameters"]:
         body = {"error": "missing_parameter", "value": "phone"}
         return make_response(body, 400)
-    user_phone = event["pathParameters"]["phone"]
+    user_phone = normalize_phone(event["pathParameters"]["phone"])
     try:
         user = Helper[user_phone]
     except ObjectNotFound:
@@ -240,7 +240,7 @@ def verify(event, context):
         body = {"error": "'code' query parameter is needed."}
         return make_response(body, status_code=400)
 
-    phone_number = event["pathParameters"]["phone"]
+    phone_number = normalize_phone(event["pathParameters"]["phone"])
     verify_code = event["queryStringParameters"]["code"]
 
     try:
