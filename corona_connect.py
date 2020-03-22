@@ -75,10 +75,7 @@ def make_response(body, status_code=200, headers=None):
 
 def normalize_phone(phone):
     phone_parsed = phonenumbers.parse(phone, region="DE")
-    phone_parsed = phonenumbers.format_number(
-        phone_parsed, phonenumbers.PhoneNumberFormat.E164
-    )
-    return phone_parsed
+    return phonenumbers.format_number(phone_parsed, phonenumbers.PhoneNumberFormat.E164)
 
 
 @db_session
