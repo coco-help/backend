@@ -166,7 +166,7 @@ None
 
 #### Response body
 ```json
-body = {
+{
     "phone": "+4917612345678",
     "name": "Mark Test",
     "location": "Hamburg",
