@@ -41,7 +41,6 @@ package:
     - package.json
     - package-lock.json
     - venv
-    - migrations/**
     - __pycache__/**
     - node_modules/**
 
