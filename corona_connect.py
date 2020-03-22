@@ -91,7 +91,7 @@ def register(event, context):
 
     body = {
         "message": "User created",
-        "code": new_user.verify_code,
+        "phone": new_user.phone,
     }
 
     return make_response(body)
