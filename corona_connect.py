@@ -84,7 +84,7 @@ def register(event, context):
     )
     print(f"Send {url} to {new_user.phone}")
     twilio.messages.create(
-        body=f"{url}?code={new_user.verify_code}",
+        body=f"Danke das du helfen möchtest. Bitte verifiziere dich indem du den folgenden Link öffnest:\n{url}?code={new_user.verify_code}",
         from_="+1 956 247 4513",
         to=new_user.phone,
     )
