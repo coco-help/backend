@@ -6,6 +6,7 @@ from urllib import parse
 import re
 
 import glom
+import phonenumbers
 import requests
 import sentry_sdk
 from db import Helper
@@ -68,9 +69,11 @@ def make_response(body, status_code=200, headers=None):
 
 
 def normalize_phone(phone):
-    phone = phone.replace(" ", "")
-    phone = phone.replace("01", "+49")
-    phone = re.sub(r"(^\+([0-9]?[0-9])|^00([0-9]?[0-9]))(.*)", r"\3\4")
+    phone_parsed = phonenumbers.parse(phone, region="DE")
+    phone_parsed = phonenumbers.format_number(
+        phone_parsed, phonenumbers.PhoneNumberFormat.E164
+    )
+    return phone_parsed
 
 
 @db_session

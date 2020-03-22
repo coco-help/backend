@@ -207,6 +207,14 @@ pyparsing = ">=2.0.2"
 six = "*"
 
 [[package]]
+category = "main"
+description = "Python version of Google's common library for parsing, formatting, storing and validating international phone numbers."
+name = "phonenumbers"
+optional = false
+python-versions = "*"
+version = "8.12.0"
+
+[[package]]
 category = "dev"
 description = "plugin and hook calling mechanisms for python"
 name = "pluggy"
@@ -567,6 +575,10 @@ nodeenv = [
 packaging = [
     {file = "packaging-20.3-py2.py3-none-any.whl", hash = "sha256:82f77b9bee21c1bafbf35a84905d604d5d1223801d639cf3ed140bd651c08752"},
     {file = "packaging-20.3.tar.gz", hash = "sha256:3c292b474fda1671ec57d46d739d072bfd495a4f51ad01a055121d81e952b7a3"},
+]
+phonenumbers = [
+    {file = "phonenumbers-8.12.0-py2.py3-none-any.whl", hash = "sha256:43b42af336bee2d8fdebe6c6c8ade2deacce8cf776dc12aa34dcb8ccc96dd70d"},
+    {file = "phonenumbers-8.12.0.tar.gz", hash = "sha256:161a99966dcfc29d52dfc36e5613ec0a04362409d5ccd384185b1506b462d156"},
 ]
 pluggy = [
     {file = "pluggy-0.13.1-py2.py3-none-any.whl", hash = "sha256:966c145cd83c96502c3c3868f50408687b38434af77734af1e9ca461a4081d2d"},
