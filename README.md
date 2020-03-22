@@ -12,7 +12,7 @@
 ```bash
 poetry install
 poetry run task setup
-``` 
+```
 
 ## Linting
 
