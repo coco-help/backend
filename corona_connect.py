@@ -3,6 +3,7 @@ import logging
 import os
 import random
 from urllib import parse
+import re
 
 import glom
 import requests
@@ -66,6 +67,12 @@ def make_response(body, status_code=200, headers=None):
     }
 
 
+def normalize_phone(phone):
+    phone = phone.replace(" ", "")
+    phone = phone.replace("01", "+49")
+    phone = re.sub(r"(^\+([0-9]?[0-9])|^00([0-9]?[0-9]))(.*)", r"\3\4")
+
+
 @db_session
 def register(event, context):
     LOGGER.info("received", event)
@@ -76,6 +83,7 @@ def register(event, context):
     user = dict(**user, first_name=first_name, last_name=last_name)
 
     user["zip_code"] = str(user.pop("zip"))
+    user["phone"] = normalize_phone(user["phone"])
     user.setdefault("is_active", True)
 
     try:
@@ -162,7 +170,7 @@ def get_helper(event, context):
         return {"statusCode": 400, "body": json.dumps(body)}
 
     requested_phone = event["pathParameters"]["phone"]
-    helper = Helper.get(phone=requested_phone)
+    helper = Helper.get(phone=normalize_phone(requested_phone))
     if helper is None:
         body = {"error": "No helper for this number"}
         return {"statusCode": 404, "body": json.dumps(body)}
@@ -179,7 +187,7 @@ def update_helper(event, context):
     requested_phone = event["pathParameters"]["phone"]
     helper_update = json.loads(event["body"])
 
-    helper = Helper.get(phone=requested_phone)
+    helper = Helper.get(phone=normalize_phone(requested_phone))
     if helper is None:
         body = {"error": "No helper for this number"}
         return {"statusCode": 404, "body": json.dumps(body)}
@@ -195,7 +203,7 @@ def delete_helper(event, context):
         return {"statusCode": 400, "body": json.dumps(body)}
 
     requested_phone = event["pathParameters"]["phone"]
-    helper = Helper.get(phone=requested_phone)
+    helper = Helper.get(phone=normalize_phone(requested_phone))
     if helper is None:
         body = {"error": "No helper for this number"}
         return {"statusCode": 404, "body": json.dumps(body)}
