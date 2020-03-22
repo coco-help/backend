@@ -92,7 +92,11 @@ def register(event, context):
 
     user["zip_code"] = str(user.pop("zip"))
 
-    user["phone"] = normalize_phone(user["phone"])
+    try:
+        user["phone"] = normalize_phone(user["phone"])
+    except phonenumbers.NumberParseException:
+        body = {"error": "invalid_field", "field": "phone"}
+        return make_response(body, 422)
     if not (
         phonenumbers.is_possible_number(user["phone"])
         and phonenumbers.is_valid_number(user["phone"])
