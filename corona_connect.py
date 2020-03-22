@@ -116,15 +116,11 @@ def authorize(event, context):
         decoded_token = jwt.decode(token, key=JWT_SECRET)
         sentry_sdk.add_breadcrumb(decoded_token)
         phone_number = decoded_token["phone"]
-        valid_until = datetime.datetime.fromtimestamp(decoded_token["exp"])
-    except (KeyError, jwt.DecodeError, glom.PathAccessError):
+    except (KeyError, jwt.PyJWTError, glom.PathAccessError):
         effect = "Deny"
     else:
         # only accessing ourselves is allowed
-        if (
-            yarl.URL(event["methodArn"]).parts[-1] == phone_number
-            and valid_until > datetime.datetime.now()
-        ):
+        if yarl.URL(event["methodArn"]).parts[-1] == phone_number:
             effect = "Allow"
         else:
             effect = "Deny"
