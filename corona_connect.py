@@ -28,6 +28,8 @@ sentry_sdk.init(
 
 FROM_PHONE_NUMBER = os.environ.get("TWILIO_FROM_PHONE_NUMBER", "+1 956 247 4513")
 JWT_SECRET = os.environ["JWT_SECRET"]
+JWT_ALGORITHM = os.environ.get("JWT_ALGORITHM", "HS256")
+
 USE_TWILIO = "TWILIO_ACCOUNT_SID" in os.environ and "TWILIO_AUTH_TOKEN" in os.environ
 if USE_TWILIO:
     twilio = Client(os.environ["TWILIO_ACCOUNT_SID"], os.environ["TWILIO_AUTH_TOKEN"])
@@ -113,18 +115,14 @@ def authorize(event, context):
     sentry_sdk.add_breadcrumb(event)
     try:
         token = event["authorizationToken"]
-        decoded_token = jwt.decode(token, key=JWT_SECRET)
+        decoded_token = jwt.decode(token, key=JWT_SECRET, algorithms=[JWT_ALGORITHM])
         sentry_sdk.add_breadcrumb(decoded_token)
         phone_number = decoded_token["phone"]
-        valid_until = datetime.datetime.fromtimestamp(decoded_token["exp"])
-    except (KeyError, jwt.DecodeError, glom.PathAccessError):
+    except (KeyError, jwt.PyJWTError, glom.PathAccessError):
         effect = "Deny"
     else:
         # only accessing ourselves is allowed
-        if (
-            yarl.URL(event["methodArn"]).parts[-1] == phone_number
-            and valid_until > datetime.datetime.now()
-        ):
+        if yarl.URL(event["methodArn"]).parts[-1] == phone_number:
             effect = "Allow"
         else:
             effect = "Deny"
@@ -256,6 +254,7 @@ def verify(event, context):
             "phone": helper.phone,
         },
         key=JWT_SECRET,
+        algorithm=JWT_ALGORITHM,
     ).decode("utf8")
 
     body = {
