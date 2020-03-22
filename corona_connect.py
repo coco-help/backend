@@ -122,12 +122,11 @@ def authorize(event, context):
         effect = "Deny"
     else:
         # only accessing ourselves is allowed
-        if (
-            normalize_phone(
-                urllib.parse.unquote(yarl.URL(event["methodArn"]).parts[-1])
-            )
-            == phone_number
-        ):
+        accessed_phone = normalize_phone(
+            urllib.parse.unquote(yarl.URL(event["methodArn"]).parts[-1])
+        )
+        sentry_sdk.add_breadcrumb(accessed_phone)
+        if accessed_phone == phone_number:
             effect = "Allow"
         else:
             effect = "Deny"
