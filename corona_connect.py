@@ -210,7 +210,7 @@ def login(event, context):
         return make_response(body, 404)
 
     user.verify_code = one_time_pin()
-    url = f"https://coco-frontend.now.sh/auth/{user.phone}?code={user.verify_code}"
+    url = yarl.URL.build(scheme="https", host="coco-frontend.now.sh", path=f"/auth/{new_user.phone}", query={"code": new_user.verify_code}) 
     message = (
         f"Hier dein Code zum einloggen: {user.verify_code}\n"
         f"Oder verifiziere dich indem du den folgenden Link öffnest:\n{url}"
