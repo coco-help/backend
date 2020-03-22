@@ -101,7 +101,9 @@ functions:
       - http:
           path: '/helper/{phone}'
           method: PUT
-          cors: true
+          cors:
+            origin: '*'
+            allowCredentials: false
           authorizer:
             identitySource: method.request.header.Authorization
             name: authorize
