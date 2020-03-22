@@ -243,7 +243,7 @@ def phone(event, context):
         event["queryStringParameters"].get("distance_weight", 1.0)
     )
     time_weight = float(  # noqa: F841
-        event["queryStringParameters"].get("time_weight") or 40_000.0
+        event["queryStringParameters"].get("time_weight", 40_000.0)
     )
 
     helper = Helper.get_by_sql(
