@@ -5,7 +5,7 @@ is inteded to be deployed on AWS Lambda.
 # Endpoints
 
 ## POST /register
-Add a new helper.
+Add a new helper to the database. After a successful request, the helper can be matched. 
 
 ### Example request
 `/register`
