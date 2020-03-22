@@ -240,7 +240,7 @@ def phone(event, context):
     requester_lat = zip_point["lat"]  # noqa: F841
     requester_lon = zip_point["lon"]  # noqa: F841
     distance_weight = float(  # noqa: F841
-        event["queryStringParameters"].get("distance_weight") or 1.0
+        event["queryStringParameters"].get("distance_weight", 1.0)
     )
     time_weight = float(  # noqa: F841
         event["queryStringParameters"].get("time_weight") or 40_000.0
