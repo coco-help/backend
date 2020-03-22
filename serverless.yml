@@ -23,6 +23,8 @@ provider:
     DB_PASSWORD: ${env:POSTGRES_MASTER_PASSWORD}
     SENTRY_RELEASE: ${env:SENTRY_RELEASE}
     SENTRY_ENVIRONMENT: ${opt:stage, 'dev'}
+    TWILIO_ACCOUNT_SID: ${env:TWILIO_ACCOUNT_SID}
+    TWILIO_AUTH_TOKEN: ${env:TWILIO_AUTH_TOKEN}
 
 package:
   exclude:
