@@ -1,3 +1,4 @@
+import datetime
 from os import environ
 
 from pony.orm import Database, Optional, PrimaryKey, Required
@@ -17,6 +18,7 @@ class Helper(db.Entity):
     is_active = Required(bool)
     verified = Required(bool, default=False)
     verify_code = Optional(str, nullable=True)
+    last_called = Required(datetime.datetime)
 
 
 db.bind(
