@@ -3,7 +3,7 @@
 ## Prerequisites
 
 - [Poetry](https://python-poetry.org/docs/#installation)
-- Python 3.7.0
+- Python 3.7
 
 ## Setup
 
@@ -12,7 +12,7 @@
 ```bash
 poetry install
 poetry run task setup
-``` 
+```
 
 ## Linting
 
