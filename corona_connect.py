@@ -1,18 +1,22 @@
+import datetime
 import json
 import logging
 import os
 import random
 from urllib import parse
 
+import db
 import glom
 import requests
 import sentry_sdk
 from db import Helper
-from pony.orm import db_session, select
+from pony.orm import db_session
 from sentry_sdk.integrations.aws_lambda import AwsLambdaIntegration
 from twilio.rest import Client
 
 LOGGER = logging.getLogger(__name__)
+
+EARTH_RADIUS_METERS = 6_371_000
 
 sentry_sdk.init(
     dsn="https://c3490788b0fd46d09992667d01bb0352@sentry.io/5169971",
@@ -29,6 +33,8 @@ else:
     from unittest.mock import Mock
 
     twilio = Mock(spec=Client)
+
+db.setup()
 
 
 def lookup_zip(zip_code):
@@ -77,6 +83,7 @@ def register(event, context):
 
     user["zip_code"] = str(user.pop("zip"))
     user.setdefault("is_active", True)
+    user.setdefault("last_called", datetime.datetime.utcnow())
 
     try:
         user.update(lookup_zip(user["zip_code"]))
@@ -221,18 +228,38 @@ def phone(event, context):
         return make_response(
             {"error": "invalid_zip_code", "value": zip_code}, status_code=400
         )
-    requester_lat = zip_point["lat"]
-    requester_lon = zip_point["lon"]
 
-    helper = (
-        select(h for h in Helper if h.is_active)
-        .order_by(lambda h: (h.lon - requester_lon) ** 2 + (h.lat - requester_lat) ** 2)
-        .first()
+    requester_lat = zip_point["lat"]  # noqa: F841
+    requester_lon = zip_point["lon"]  # noqa: F841
+    distance_weight = float(  # noqa: F841
+        event["queryStringParameters"].get("distance_weight", 1.0)
     )
+    time_weight = float(  # noqa: F841
+        event["queryStringParameters"].get("time_weight", 40_000.0)
+    )
+
+    helper = Helper.get_by_sql(
+        """
+        SELECT * FROM helper
+        WHERE is_active AND verified
+        ORDER BY
+            $distance_weight * $EARTH_RADIUS_METERS * 2 * asin(
+                sqrt(
+                    sin(radians($requester_lat - lat)/2)^2
+                    + sin(radians($requester_lon - lon)/2)^2
+                    * cos(radians($requester_lat))
+                    * cos(radians(lat))
+                )
+            ) + $time_weight / (EXTRACT(epoch FROM (current_timestamp - last_called)) / 60)
+        LIMIT 1
+        """
+    )
+
     if helper is None:
         body = {"error": "no_helpers_available"}
         return make_response(body, status_code=404)
     else:
+        helper.last_called = datetime.datetime.utcnow()
         body = {
             "phone": helper.phone,
             "name": f"{helper.first_name} {helper.last_name}",

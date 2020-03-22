@@ -109,7 +109,8 @@ functions:
             parameters:
               querystrings:
                 zip: true
-
+                distance_weight: false
+                time_weight: false
 
   verify:
     handler: corona_connect.verify
