@@ -25,6 +25,8 @@ provider:
     SENTRY_ENVIRONMENT: ${opt:stage, 'dev'}
     TWILIO_ACCOUNT_SID: ${env:TWILIO_ACCOUNT_SID}
     TWILIO_AUTH_TOKEN: ${env:TWILIO_AUTH_TOKEN}
+    JWT_SECRET: ${env:JWT_SECRET}
+
 
 package:
   exclude:
@@ -46,6 +48,21 @@ package:
     - node_modules/**
 
 functions:
+  authorize:
+    handler: corona_connect.authorize
+  login:
+    handler: corona_connect.login
+    events:
+      - http:
+          path: '/login/{phone}'
+          method: POST
+          cors:
+            origin: '*'
+            allowCredentials: false
+          request:
+            parameters:
+              paths:
+                phone: true
   register:
     # handler value syntax is `{cargo-package-name}.{bin-name}`
     # or `{cargo-package-name}` for short when you are building a
@@ -55,7 +72,10 @@ functions:
       - http:
           path: '/register'
           method: POST
-          cors: true
+          cors:
+            origin: '*'
+            allowCredentials: false
+
           request:
             schema:
               application/json: ${file(schema/create_user.json)}
@@ -66,7 +86,10 @@ functions:
       - http:
           path: '/helper/{phone}'
           method: GET
-          cors: true
+          authorizer:
+            identitySource: method.request.header.Authorization
+            name: authorize
+            type: token
           request:
             parameters:
               paths:
@@ -79,6 +102,10 @@ functions:
           path: '/helper/{phone}'
           method: PUT
           cors: true
+          authorizer:
+            identitySource: method.request.header.Authorization
+            name: authorize
+            type: token
           request:
             parameters:
               paths:
@@ -93,6 +120,10 @@ functions:
           path: '/helper/{phone}'
           method: DELETE
           cors: true
+          authorizer:
+            identitySource: method.request.header.Authorization
+            name: authorize
+            type: token
           request:
             parameters:
               paths:
@@ -104,7 +135,6 @@ functions:
       - http:
           path: '/phone'
           method: GET
-          cors: true
           request:
             parameters:
               querystrings:

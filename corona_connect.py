@@ -7,9 +7,11 @@ from urllib import parse
 
 import db
 import glom
+import jwt
 import phonenumbers
 import requests
 import sentry_sdk
+import yarl
 from db import Helper
 from pony.orm import db_session
 from sentry_sdk.integrations.aws_lambda import AwsLambdaIntegration
@@ -24,6 +26,8 @@ sentry_sdk.init(
     integrations=[AwsLambdaIntegration()],
 )
 
+FROM_PHONE_NUMBER = os.environ.get("TWILIO_FROM_PHONE_NUMBER", "+1 956 247 4513")
+JWT_SECRET = os.environ["JWT_SECRET"]
 USE_TWILIO = "TWILIO_ACCOUNT_SID" in os.environ and "TWILIO_AUTH_TOKEN" in os.environ
 if USE_TWILIO:
     twilio = Client(os.environ["TWILIO_ACCOUNT_SID"], os.environ["TWILIO_AUTH_TOKEN"])
@@ -36,6 +40,16 @@ else:
     twilio = Mock(spec=Client)
 
 db.setup()
+
+
+def one_time_pin() -> str:
+    return str(random.randint(0, 9999)).zfill(4)  # nosec
+
+
+def send_sms(to, message):
+    twilio.messages.create(
+        body=message, from_=FROM_PHONE_NUMBER, to=to,
+    )
 
 
 def lookup_zip(zip_code):
@@ -64,7 +78,7 @@ def lookup_zip(zip_code):
     )
 
 
-def make_response(body, status_code=200, headers=None):
+def make_response(body, status_code=200, *, headers=None):
     headers = headers or {}
     return {
         "statusCode": status_code,
@@ -87,6 +101,38 @@ def validate_phone(phone):
         raise phonenumbers.NumberParseException(
             "NOT_A_NUMBER", "Invalid or impossible number"
         )
+
+
+def authorize(event, context):
+    sentry_sdk.add_breadcrumb(event)
+    try:
+        token = event["authorizationToken"]
+        decoded_token = jwt.decode(token, key=JWT_SECRET)
+        sentry_sdk.add_breadcrumb(decoded_token)
+        phone_number = glom.glom(decoded_token, "user.phone")
+    except (KeyError, jwt.DecodeError, glom.PathAccessError):
+        effect = "Deny"
+    else:
+        # only accessing ourselves is allowed
+        if yarl.URL(event["methodArn"]).parts[-1] == phone_number:
+            effect = "Allow"
+        else:
+            effect = "Deny"
+
+    policy = {
+        "principalId": "user",
+        "policyDocument": {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Action": "execute-api:Invoke",
+                    "Effect": effect,
+                    "Resource": event["methodArn"],
+                }
+            ],
+        },
+    }
+    return policy
 
 
 @db_session
@@ -118,8 +164,7 @@ def register(event, context):
         )
 
     LOGGER.info("Creating user with", user)
-    one_time_pin = str(random.randint(0, 9999)).zfill(4)  # nosec
-    new_user = Helper(**user, verify_code=one_time_pin)
+    new_user = Helper(**user, verify_code=one_time_pin())
     LOGGER.info("Created user", new_user.to_dict())
 
     # this is really hacky & bad, but it works for now
@@ -128,14 +173,13 @@ def register(event, context):
         f'{event["requestContext"]["path"]}/../verify/{new_user.phone}',
     )
     LOGGER.info(f"Send {url} to {new_user.phone}")
-    twilio.messages.create(
-        body=f"Hallo {new_user.first_name}, "
+    message = (
+        f"Hallo {new_user.first_name}, "
         f"Danke das du helfen möchtest.\n"
         f"Dein Code ist {new_user.verify_code}\n"
         f"Oder verifiziere dich indem du den folgenden Link öffnest:\n{url}?code={new_user.verify_code}",
-        from_="+1 956 247 4513",
-        to=new_user.phone,
     )
+    send_sms(new_user.phone, message)
 
     body = {
         "message": "User created",
@@ -143,6 +187,23 @@ def register(event, context):
     }
 
     return make_response(body)
+
+
+@db_session
+def login(event, context):
+    if event["pathParameters"] is None or "phone" not in event["pathParameters"]:
+        body = {"error": "missing_parameter", "value": "phone"}
+        return make_response(body, 400)
+    user_phone = event["pathParameters"]["phone"]
+    try:
+        user = Helper[user_phone]
+    except KeyError:
+        body = {"error": "helper_not_found", "value": user_phone}
+        return make_response(body, 404)
+
+    user.verify_code = one_time_pin()
+    send_sms(user.phone, f"Hier dein Code zum einloggen: {user.verify_code}")
+    return make_response({"message": "user_message_sent"})
 
 
 @db_session
@@ -172,9 +233,25 @@ def verify(event, context):
     helper.verified = True
     helper.verify_code = None
 
+    token = jwt.encode(
+        {
+            "user": {
+                "phone": helper.phone,
+                "first_name": helper.first_name,
+                "last_name": helper.last_name,
+            }
+        },
+        key=JWT_SECRET,
+    ).decode("utf8")
+
     body = {
         "message": "user_verified",
-        "value": helper.phone,
+        "user": {
+            "phone": helper.phone,
+            "first_name": helper.first_name,
+            "last_name": helper.last_name,
+        },
+        "token": token,
     }
 
     if "next" in event["queryStringParameters"]:
