@@ -124,7 +124,7 @@ def authorize(event, context):
         # only accessing ourselves is allowed
         if (
             normalize_phone(
-                urllib.parse.unquote_plus(yarl.URL(event["methodArn"]).parts[-1])
+                urllib.parse.unquote(yarl.URL(event["methodArn"]).parts[-1])
             )
             == phone_number
         ):
@@ -213,9 +213,7 @@ def login(event, context):
     if event["pathParameters"] is None or "phone" not in event["pathParameters"]:
         body = {"error": "missing_parameter", "value": "phone"}
         return make_response(body, 400)
-    user_phone = normalize_phone(
-        urllib.parse.unquote_plus(event["pathParameters"]["phone"])
-    )
+    user_phone = normalize_phone(urllib.parse.unquote(event["pathParameters"]["phone"]))
     try:
         user = Helper[user_phone]
     except ObjectNotFound:
@@ -249,7 +247,7 @@ def verify(event, context):
         return make_response(body, status_code=400)
 
     phone_number = normalize_phone(
-        urllib.parse.unquote_plus(event["pathParameters"]["phone"])
+        urllib.parse.unquote(event["pathParameters"]["phone"])
     )
     verify_code = event["queryStringParameters"]["code"]
 
@@ -303,7 +301,7 @@ def get_helper(event, context):
         body = {"error": "'phone' path paramter is needed"}
         return {"statusCode": 400, "body": json.dumps(body)}
 
-    requested_phone = urllib.parse.unquote_plus(event["pathParameters"]["phone"])
+    requested_phone = urllib.parse.unquote(event["pathParameters"]["phone"])
     helper = Helper.get(phone=normalize_phone(requested_phone))
     if helper is None:
         body = {"error": "No helper for this number"}
@@ -318,7 +316,7 @@ def update_helper(event, context):
         body = {"error": "'phone' path paramter is needed"}
         return {"statusCode": 400, "body": json.dumps(body)}
 
-    requested_phone = urllib.parse.unquote_plus(event["pathParameters"]["phone"])
+    requested_phone = urllib.parse.unquote(event["pathParameters"]["phone"])
     helper_update = json.loads(event["body"])
 
     helper = Helper.get(phone=normalize_phone(requested_phone))
@@ -336,7 +334,7 @@ def delete_helper(event, context):
         body = {"error": "'phone' path paramter is needed"}
         return {"statusCode": 400, "body": json.dumps(body)}
 
-    requested_phone = urllib.parse.unquote_plus(event["pathParameters"]["phone"])
+    requested_phone = urllib.parse.unquote(event["pathParameters"]["phone"])
     helper = Helper.get(phone=normalize_phone(requested_phone))
     if helper is None:
         body = {"error": "No helper for this number"}
