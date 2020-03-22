@@ -80,6 +80,12 @@ def lookup_zip(zip_code):
 
 def make_response(body, status_code=200, *, headers=None):
     headers = headers or {}
+    sentry_sdk.add_breadcrumb(
+        category="response",
+        message=f"dumping {body} with headers: {headers}",
+        level="info",
+        type="http",
+    )
     return {
         "statusCode": status_code,
         "body": json.dumps(body),
@@ -282,9 +288,9 @@ def get_helper(event, context):
     helper = Helper.get(phone=normalize_phone(requested_phone))
     if helper is None:
         body = {"error": "No helper for this number"}
-        return {"statusCode": 404, "body": json.dumps(body)}
+        return make_response(body, 404)
     else:
-        return {"statusCode": 200, "body": json.dumps(helper.to_dict())}
+        return make_response(helper.to_dict(), 200)
 
 
 @db_session
