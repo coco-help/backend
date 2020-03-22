@@ -11,6 +11,7 @@ sentry_sdk = "^0.14.3"
 pony = "^0.7.13"
 requests = "^2.23.0"
 glom = "^19.10.0"
+twilio = "^6.37.0"
 
 [tool.poetry.dev-dependencies]
 taskipy = "^1.2.1"
@@ -21,7 +22,7 @@ pre-commit = "^2.2.0"
 [tool.taskipy.tasks]
 test = "pytest tests/"
 lint = "pre-commit run --all-files"
-setup = "pre-commit install"
+setup = "poetry install && pre-commit install -t pre-commit -t prepare-commit-msg"
 
 [tool.isort]
 known_first_party = ["db", "corona_connect"]

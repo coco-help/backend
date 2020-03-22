@@ -23,11 +23,16 @@ provider:
     DB_PASSWORD: ${env:POSTGRES_MASTER_PASSWORD}
     SENTRY_RELEASE: ${env:SENTRY_RELEASE}
     SENTRY_ENVIRONMENT: ${opt:stage, 'dev'}
+    TWILIO_ACCOUNT_SID: ${env:TWILIO_ACCOUNT_SID}
+    TWILIO_AUTH_TOKEN: ${env:TWILIO_AUTH_TOKEN}
 
 package:
   exclude:
     - .envrc
     - .gitlab-ci.yml
+    - .pytest_cache/**
+    - .pre-commit-config.yaml
+    - .idea/**
     - tests/**
     - schema/**
     - pyproject.toml
@@ -36,6 +41,9 @@ package:
     - package.json
     - package-lock.json
     - venv
+    - migrations/**
+    - __pycache__/**
+    - node_modules/**
 
 functions:
   register:
@@ -47,6 +55,7 @@ functions:
       - http:
           path: '/register'
           method: POST
+          cors: true
           request:
             schema:
               application/json: ${file(schema/create_user.json)}
@@ -57,6 +66,7 @@ functions:
       - http:
           path: '/helper/{phone}'
           method: GET
+          cors: true
           request:
             parameters:
               paths:
@@ -68,6 +78,7 @@ functions:
       - http:
           path: '/helper/{phone}'
           method: PUT
+          cors: true
           request:
             parameters:
               paths:
@@ -81,6 +92,7 @@ functions:
       - http:
           path: '/helper/{phone}'
           method: DELETE
+          cors: true
           request:
             parameters:
               paths:
@@ -92,10 +104,27 @@ functions:
       - http:
           path: '/phone'
           method: GET
+          cors: true
           request:
             parameters:
               querystrings:
                 zip: true
+
+
+  verify:
+    handler: corona_connect.verify
+    events:
+      - http:
+          path: '/verify/{phone}'
+          method: GET
+          request:
+            parameters:
+              paths:
+                phone: true
+              querystrings:
+                code: true
+
+
 
 
 # you can add CloudFormation resource templates here

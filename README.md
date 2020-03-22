@@ -3,7 +3,7 @@
 ## Prerequisites
 
 - [Poetry](https://python-poetry.org/docs/#installation)
-- Python 3.7.0
+- Python 3.7
 
 ## Setup
 
@@ -25,3 +25,14 @@ poetry run task lint
 ```bash
 poetry run task test
 ```
+
+# development deployment
+
+make sure you have `npm` installed at a recent version.
+```bash
+npx serverless deploy --stage dev/<your_name>`
+```
+
+
+# migrating database
+look at the sql scripts in migrations/
