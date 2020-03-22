@@ -1,9 +1,27 @@
-# setup
+# CoronaConnect backend
 
-run `poetry install` and then `poetry run task setup`
+## Prerequisites
 
-# linting
-`poetry run task lint`
+- [Poetry](https://python-poetry.org/docs/#installation)
+- Python 3.7.0
 
-# testing
-`poetry run task test`
+## Setup
+
+### Install poetry
+
+```bash
+poetry install
+poetry run task setup
+``` 
+
+## Linting
+
+```bash
+poetry run task lint
+```
+
+## Testing
+
+```bash
+poetry run task test
+```
