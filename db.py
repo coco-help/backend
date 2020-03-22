@@ -17,7 +17,7 @@ class Helper(db.Entity):
     location_name = Required(str)
     is_active = Required(bool)
     verified = Required(bool, default=False)
-    last_called = Required(datetime.datetime)
+    last_called = Required(datetime.datetime, hidden=True)
     verify_code = Optional(str, nullable=True, hidden=True)
 
 
