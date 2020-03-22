@@ -141,7 +141,7 @@ description = "File identification library for Python"
 name = "identify"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,>=2.7"
-version = "1.4.11"
+version = "1.4.12"
 
 [package.extras]
 license = ["editdistance"]
@@ -490,7 +490,7 @@ docs = ["sphinx", "jaraco.packaging (>=3.2)", "rst.linker (>=1.9)"]
 testing = ["jaraco.itertools", "func-timeout"]
 
 [metadata]
-content-hash = "a999d23ea047b3586876ba28db4fb76507894f21c6c3e3535afa6696c9b4b84f"
+content-hash = "36610c87471fbec888244af334b36f425433f65b900039cc4d8db13b7d1588fe"
 python-versions = "^3.7"
 
 [metadata.files]
@@ -550,8 +550,8 @@ glom = [
     {file = "glom-19.10.0.tar.gz", hash = "sha256:c8a50cb9fcf0c84807836c6a73cf61285557834b9050d7bde7732b936aceb7dd"},
 ]
 identify = [
-    {file = "identify-1.4.11-py2.py3-none-any.whl", hash = "sha256:1222b648251bdcb8deb240b294f450fbf704c7984e08baa92507e4ea10b436d5"},
-    {file = "identify-1.4.11.tar.gz", hash = "sha256:d824ebe21f38325c771c41b08a95a761db1982f1fc0eee37c6c97df3f1636b96"},
+    {file = "identify-1.4.12-py2.py3-none-any.whl", hash = "sha256:5793876ecee0475b4e78ba60869f3c8a4407535d9dffd898048753f61c68eacd"},
+    {file = "identify-1.4.12.tar.gz", hash = "sha256:46b5583a7ae1b0c5d8b51902940f8e11ab339515d1a40b91acf51d5c3ae83029"},
 ]
 idna = [
     {file = "idna-2.9-py2.py3-none-any.whl", hash = "sha256:a068a21ceac8a4d63dbfd964670474107f541babbd2250d61922f029858365fa"},
