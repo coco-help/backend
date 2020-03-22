@@ -26,5 +26,9 @@ poetry run task lint
 poetry run task test
 ```
 
+# development deployment
+make sure you have `npm` installed at a recent version.
+`npx serverless deploy --stage dev/<your_name>`
+
 # migrating database
 look at the sql scripts in migrations/
