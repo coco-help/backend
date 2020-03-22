@@ -22,13 +22,6 @@
       "type": "string"
     }
   },
-  "required": [
-    "first_name",
-    "last_name",
-    "email",
-    "zip_code",
-    "is_active"
-  ],
   "title": "helper update schema",
   "type": "object"
 }
