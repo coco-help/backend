@@ -21,6 +21,8 @@ provider:
       Fn::GetAtt: ["helperDatabase", "Endpoint.Address"]
     DB_USER: ${env:POSTGRES_MASTER_USER, 'postgres'}
     DB_PASSWORD: ${env:POSTGRES_MASTER_PASSWORD}
+    SENTRY_RELEASE: ${env:SENTRY_RELEASE}
+    SENTRY_ENVIRONMENT: ${opt:stage, 'dev'}
 
 package:
   exclude:

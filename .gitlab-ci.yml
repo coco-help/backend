@@ -40,11 +40,19 @@ deploy:serverless:
   environment:
     name: production
     url: "https://7xbv26cd6k.execute-api.eu-central-1.amazonaws.com/production/"
+  variables:
+    SENTRY_ORG: jonas-49
+    SENTRY_PROJECT: aws-lambda-backend
   cache:
     paths:
       - node_modules/
       - .serverless/
   script:
+    - curl -sL https://sentry.io/get-cli/ | bash
+    - SENTRY_RELEASE="corona-connect@$(sentry-cli releases propose-version)"
+    - sentry-cli releases new $SENTRY_RELEASE
     - apt update && apt install npm -y
     - npm install
     - npx serverless deploy --stage production
+    - sentry-cli releases set-commits --auto $SENTRY_RELEASE
+    - sentry-cli releases finalize $SENTRY_RELEASE
