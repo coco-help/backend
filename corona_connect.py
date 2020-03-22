@@ -109,6 +109,9 @@ def verify(event, context):
     verify_code = event["queryStringParameters"]["code"]
 
     helper = Helper.get(verify_code=verify_code)
+    if helper is None:
+        body = {"error": "invalid_verify_code"}
+        return make_response(body, status_code=404)
     helper.verified = True
     helper.verify_code = None
 
