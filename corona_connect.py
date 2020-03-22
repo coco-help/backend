@@ -179,7 +179,12 @@ def register(event, context):
     new_user = Helper(**user, verify_code=one_time_pin())
     LOGGER.info("Created user", new_user.to_dict())
 
-    url = yarl.URL.build(scheme="https", host="coco-frontend.now.sh", path=f"/auth/{new_user.phone}", query={"code": new_user.verify_code}) 
+    url = yarl.URL.build(
+        scheme="https",
+        host="coco-frontend.now.sh",
+        path=f"/auth/{new_user.phone}",
+        query={"code": new_user.verify_code},
+    )
     LOGGER.info(f"Send {url} to {new_user.phone}")
     message = (
         f"Hallo {new_user.first_name}, "
@@ -210,7 +215,12 @@ def login(event, context):
         return make_response(body, 404)
 
     user.verify_code = one_time_pin()
-    url = yarl.URL.build(scheme="https", host="coco-frontend.now.sh", path=f"/auth/{new_user.phone}", query={"code": new_user.verify_code}) 
+    url = yarl.URL.build(
+        scheme="https",
+        host="coco-frontend.now.sh",
+        path=f"/auth/{user.phone}",
+        query={"code": user.verify_code},
+    )
     message = (
         f"Hier dein Code zum einloggen: {user.verify_code}\n"
         f"Oder verifiziere dich indem du den folgenden Link öffnest:\n{url}"
