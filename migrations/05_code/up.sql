@@ -1,2 +1,2 @@
 ALTER TABLE helper
-ADD COLUMN verify_code TEXT UNIQUE;
+ADD COLUMN verify_code TEXT;

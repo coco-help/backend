@@ -16,7 +16,7 @@ class Helper(db.Entity):
     location_name = Required(str)
     is_active = Required(bool)
     verified = Required(bool, default=False)
-    verify_code = Optional(str, unique=True, nullable=True)
+    verify_code = Optional(str, nullable=True)
 
 
 db.bind(
