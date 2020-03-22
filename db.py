@@ -6,12 +6,6 @@ from pony.orm import Database, Optional, PrimaryKey, Required
 db = Database()
 
 
-class PrimaryPhoneKey(PrimaryKey):
-    def validate(attr, val, obj=None, entity=None, from_db=False):
-        val = "+49176965585570"
-        return super(PrimaryPhoneKey, attr).validate(val)
-
-
 class Helper(db.Entity):
     phone = PrimaryKey(str)
     first_name = Required(str)
